@@ -1,0 +1,42 @@
+---
+description: Taskios — канбан-доска задач (аналог Trello), стек и структура репозитория
+alwaysApply: true
+---
+
+# Taskios (freelance-crm)
+
+Веб-приложение для управления задачами в стиле **Trello**: канбан-доска с колонками статусов и **drag & drop** карточек между колонками и внутри колонки.
+
+## Стек
+
+- **Next.js 16** (App Router), **React 19**, **TypeScript**
+- **Redux Toolkit** + **react-redux** — состояние доски и задач (`store/`)
+- **@dnd-kit** (`core`, `sortable`, `utilities`) — перетаскивание
+- **Tailwind CSS v4**, **react-hook-form** (формы)
+- **ESLint** (eslint-config-next), **Prettier** (+ prettier-plugin-tailwindcss), **Husky** + lint-staged
+
+Импорты через алиас `@/` → корень проекта.
+
+## Структура
+
+| Путь | Назначение |
+|------|------------|
+| `app/` | App Router: layout, `globals.css`, страницы `(pages)/` |
+| `components/taskios/` | UI доски: `board-view`, колонки, карточки, DnD-обёртки |
+| `components/providers/` | `StoreProvider` для Redux |
+| `store/slices/` | Слайсы (например `tasks-slice`) |
+| `store/selectors/` | Селекторы доски |
+| `store/hooks.ts` | Типизированные `useAppDispatch` / `useAppSelector` |
+| `lib/board-types.ts` | Типы `BoardTask`, `TaskStatus`, колонки |
+| `lib/dnd-utils.ts` | Вспомогательная логика DnD |
+| `lib/mock-board.ts` | Начальные/мок-данные |
+
+Домен: колонки `todo` | `doing` | `review` | `done`; у задачи — `order`, теги, статус.
+
+## Соглашения для агента
+
+- Интерактивная доска и DnD — **client components** (`"use client"`); серверные компоненты — layout и статичные страницы.
+- Изменения позиций/статусов задач — через **RTK actions** в слайсе, не дублировать бизнес-логику в UI.
+- Стили — **Tailwind**, существующая палитра и классы из `globals.css`; UI на **русском**.
+- Правки **точечные**, без лишнего рефакторинга; не трогать `AGENTS.md` (правила Next.js из пакета).
+- Перед кодом под **Next.js 16** сверяться с актуальными API (в т.ч. `node_modules/next/dist/docs/` при сомнениях).

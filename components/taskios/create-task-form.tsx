@@ -59,6 +59,7 @@ export function CreateTaskForm({
           Название
         </label>
         <input
+        // вынести из шаблона
           {...register("title", {
             required: "Введите название задачи",
             minLength: { value: 2, message: "Минимум 2 символа" },

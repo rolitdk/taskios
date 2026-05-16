@@ -72,6 +72,7 @@ const tasksSlice = createSlice({
         .map((word) => word[0]?.toUpperCase() ?? "")
         .join("");
 
+        // remove classes , add types or others
       const avatarClasses = [
         "bg-accent-soft text-accent-strong",
         "bg-surface-muted text-accent-strong",
