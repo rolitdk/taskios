@@ -1,5 +1,6 @@
 // Карточка задачи
 import type { BoardTask, TaskTag } from "@/lib/board-types";
+import { AVATAR_TONE_CLASSES } from "@/lib/task-avatar";
 
 const tagToneClass: Record<TaskTag["tone"], string> = {
   pink: "bg-pink-100 text-pink-800 ring-1 ring-pink-200/60",
@@ -15,7 +16,7 @@ export function TaskCard({ task }: TaskCardProps) {
   return (
     <article className="bg-surface flex cursor-grab gap-3 rounded-2xl p-3 shadow-sm ring-1 ring-black/5 active:cursor-grabbing">
       <div
-        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${task.avatarClass}`}
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${AVATAR_TONE_CLASSES[task.avatarTone]}`}
         aria-hidden
       >
         {task.initials}

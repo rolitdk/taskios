@@ -1,3 +1,4 @@
+// Drag and drop
 import {
   COLUMN_DEFINITIONS,
   type BoardTask,

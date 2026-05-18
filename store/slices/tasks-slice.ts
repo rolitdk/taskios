@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { BoardTask, TaskStatus } from "@/lib/board-types";
 import { initialTasks } from "@/lib/mock-board";
+import { buildTaskInitials, pickAvatarTone } from "@/lib/task-avatar";
 
 export type CreateTaskPayload = {
   title: string;
@@ -65,29 +66,12 @@ const tasksSlice = createSlice({
       const columnTasks = state.tasks.filter((task) => task.status === status);
       const nextOrder = columnTasks.length;
 
-      const initials = title
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((word) => word[0]?.toUpperCase() ?? "")
-        .join("");
-
-        // remove classes , add types or others
-      const avatarClasses = [
-        "bg-accent-soft text-accent-strong",
-        "bg-surface-muted text-accent-strong",
-        "bg-shell-bg text-foreground",
-        "bg-accent text-white",
-      ];
-
       const newTask: BoardTask = {
         id: `t-${crypto.randomUUID()}`,
         title: title.trim(),
         subtitle: subtitle.trim() || "Без описания",
-        initials: initials || "НЗ",
-        avatarClass:
-          avatarClasses[state.tasks.length % avatarClasses.length] ??
-          avatarClasses[0],
+        initials: buildTaskInitials(title),
+        avatarTone: pickAvatarTone(state.tasks.length),
         tags: [],
         status,
         order: nextOrder,

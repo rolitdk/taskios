@@ -3,6 +3,10 @@
 
 import { useForm } from "react-hook-form";
 
+import {
+  compactFormControlClass,
+  FormField,
+} from "@/components/taskios/form-field";
 import type { TaskStatus } from "@/lib/board-types";
 import { COLUMN_DEFINITIONS } from "@/lib/board-types";
 import { useAppDispatch } from "@/store/hooks";
@@ -54,51 +58,35 @@ export function CreateTaskForm({
       onSubmit={onSubmit}
       className="bg-surface space-y-3 rounded-2xl p-3 shadow-sm ring-1 ring-black/5"
     >
-      <div>
-        <label className="text-foreground mb-1 block text-xs font-medium">
-          Название
-        </label>
+      <FormField label="Название" error={errors.title?.message}>
         <input
-        // вынести из шаблона
           {...register("title", {
             required: "Введите название задачи",
             minLength: { value: 2, message: "Минимум 2 символа" },
           })}
           autoFocus
-          className="border-accent-soft/80 text-foreground placeholder:text-muted w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-200/80"
+          className={compactFormControlClass}
           placeholder="Например, сверстать карточку"
         />
-        {errors.title ? (
-          <p className="mt-1 text-xs text-pink-700">{errors.title.message}</p>
-        ) : null}
-      </div>
+      </FormField>
 
-      <div>
-        <label className="text-foreground mb-1 block text-xs font-medium">
-          Описание
-        </label>
+      <FormField label="Описание">
         <input
           {...register("subtitle")}
-          className="border-accent-soft/80 text-foreground placeholder:text-muted w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-200/80"
+          className={compactFormControlClass}
           placeholder="Срок или заметка"
         />
-      </div>
+      </FormField>
 
-      <div>
-        <label className="text-foreground mb-1 block text-xs font-medium">
-          Колонка
-        </label>
-        <select
-          {...register("status")}
-          className="border-accent-soft/80 text-foreground w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-200/80"
-        >
+      <FormField label="Колонка">
+        <select {...register("status")} className={compactFormControlClass}>
           {COLUMN_DEFINITIONS.map((column) => (
             <option key={column.id} value={column.id}>
               {column.title}
             </option>
           ))}
         </select>
-      </div>
+      </FormField>
 
       <div className="flex gap-2 pt-1">
         <button

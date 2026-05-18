@@ -1,5 +1,5 @@
-// Одна колонка доски задач
 "use client";
+// Одна колонка доски задач
 
 import { useDroppable } from "@dnd-kit/core";
 import {
