@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { BoardTask, TaskStatus } from "@/lib/board-types";
 import { WORK_BOARD_ID } from "@/lib/board-catalog";
-import { buildInitialBoards } from "@/lib/initial-boards";
+import { buildInitialBoards } from "@/lib/mock-boards";
 import { buildTaskInitials, pickAvatarTone } from "@/lib/task-avatar";
 
 export type CreateTaskPayload = {
