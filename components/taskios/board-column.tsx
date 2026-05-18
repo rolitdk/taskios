@@ -8,24 +8,22 @@ import {
 
 import type {
   BoardColumn as BoardColumnType,
+  BoardTask,
   TaskStatus,
 } from "@/lib/board-types";
 
-import { TaskForm } from "./task-form";
 import { SortableTaskCard } from "./sortable-task-card";
 
 type BoardColumnProps = {
   column: BoardColumnType;
-  isCreating: boolean;
   onStartCreate: (status: TaskStatus) => void;
-  onCancelCreate: () => void;
+  onEditTask: (task: BoardTask) => void;
 };
 
 export function BoardColumn({
   column,
-  isCreating,
   onStartCreate,
-  onCancelCreate,
+  onEditTask,
 }: BoardColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
   const taskIds = column.tasks.map((task) => task.id);
@@ -56,30 +54,23 @@ export function BoardColumn({
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
         <ul className="flex min-h-[4rem] flex-1 flex-col gap-2 overflow-y-auto">
           {column.tasks.map((task) => (
-            <SortableTaskCard key={task.id} task={task} />
+            <SortableTaskCard
+              key={task.id}
+              task={task}
+              onEdit={onEditTask}
+            />
           ))}
         </ul>
       </SortableContext>
 
-      {isCreating ? (
-        <div className="mt-3">
-          <TaskForm
-            mode="create"
-            defaultStatus={column.id}
-            onCancel={onCancelCreate}
-            onCreated={onCancelCreate}
-          />
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => onStartCreate(column.id)}
-          className="text-muted hover:text-foreground border-accent-soft/80 mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed bg-white/40 px-3 py-2 text-sm font-medium transition-colors hover:bg-white/70"
-        >
-          <span className="text-lg leading-none">+</span>
-          Добавить задачу
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={() => onStartCreate(column.id)}
+        className="text-muted hover:text-foreground border-accent-soft/80 mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed bg-white/40 px-3 py-2 text-sm font-medium transition-colors hover:bg-white/70"
+      >
+        <span className="text-lg leading-none">+</span>
+        Добавить задачу
+      </button>
     </section>
   );
 }
