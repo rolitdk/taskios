@@ -1,3 +1,4 @@
+// Страница авторизации
 import Link from "next/link";
 
 import { AppShell } from "@/components/taskios/app-shell";
