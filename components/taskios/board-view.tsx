@@ -15,7 +15,10 @@ import { useState } from "react";
 import type { BoardTask, TaskStatus } from "@/lib/board-types";
 import { resolveDropTarget } from "@/lib/dnd-utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { selectBoardColumns } from "@/store/selectors/board-selectors";
+import {
+  selectActiveBoardTasks,
+  selectBoardColumns,
+} from "@/store/selectors/board-selectors";
 import { moveTask } from "@/store/slices/tasks-slice";
 
 import { BoardColumn } from "./board-column";
@@ -30,7 +33,7 @@ type TaskModalState =
 export function BoardView() {
   const dispatch = useAppDispatch();
   const columns = useAppSelector(selectBoardColumns);
-  const tasks = useAppSelector((state) => state.tasks.tasks);
+  const tasks = useAppSelector(selectActiveBoardTasks);
   const [activeTask, setActiveTask] = useState<BoardTask | null>(null);
   const [taskModal, setTaskModal] = useState<TaskModalState | null>(null);
 

@@ -2,9 +2,22 @@
 
 import Link from "next/link";
 
-import { BoardView } from "./board-view";
+import { BoardView } from "@/components/taskios/board-view";
+import { useActiveBoard } from "@/hooks/use-active-board";
+import { getBoardMeta } from "@/lib/board-catalog";
 
-export function BoardPageClient() {
+type BoardPageClientProps = {
+  boardId: string;
+};
+
+export function BoardPageClient({ boardId }: BoardPageClientProps) {
+  useActiveBoard(boardId);
+
+  const board = getBoardMeta(boardId);
+  if (!board) {
+    return null;
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 px-4 py-6 sm:px-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -19,7 +32,7 @@ export function BoardPageClient() {
             Рабочее пространство
           </p>
           <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
-            Моя доска
+            {board.title}
           </h1>
         </div>
         <span className="bg-surface text-muted rounded-full px-3 py-1 text-xs font-medium shadow-sm ring-1 ring-black/5">
