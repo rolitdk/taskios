@@ -16,8 +16,8 @@ import type { BoardTask, TaskStatus } from "@/lib/board-types";
 import { resolveDropTarget } from "@/lib/dnd-utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  selectActiveBoardTasks,
-  selectBoardColumns,
+  selectBoardColumnsForBoard,
+  selectBoardTasksById,
 } from "@/store/selectors/board-selectors";
 import { moveTask } from "@/store/slices/tasks-slice";
 
@@ -30,10 +30,18 @@ type TaskModalState =
   | { kind: "create"; status: TaskStatus }
   | { kind: "edit"; task: BoardTask };
 
-export function BoardView() {
+type BoardViewProps = {
+  boardId: string;
+};
+
+export function BoardView({ boardId }: BoardViewProps) {
   const dispatch = useAppDispatch();
-  const columns = useAppSelector(selectBoardColumns);
-  const tasks = useAppSelector(selectActiveBoardTasks);
+  const columns = useAppSelector((state) =>
+    selectBoardColumnsForBoard(state, boardId),
+  );
+  const tasks = useAppSelector((state) =>
+    selectBoardTasksById(state, boardId),
+  );
   const [activeTask, setActiveTask] = useState<BoardTask | null>(null);
   const [taskModal, setTaskModal] = useState<TaskModalState | null>(null);
 

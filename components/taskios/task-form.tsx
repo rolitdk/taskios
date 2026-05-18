@@ -61,6 +61,13 @@ export function TaskForm(props: TaskFormProps) {
     formState: { errors, isSubmitting },
   } = useForm<TaskFormValues>({ defaultValues });
 
+  const registerTitle = () => {
+    return register("title", {
+      required: "Введите название задачи",
+      minLength: { value: 2, message: "Минимум 2 символа" },
+    });
+  }
+
   const onSubmit = handleSubmit((values) => {
     if (props.mode === "edit") {
       editTask({
@@ -92,10 +99,7 @@ export function TaskForm(props: TaskFormProps) {
     >
       <FormField label="Название" error={errors.title?.message}>
         <input
-          {...register("title", {
-            required: "Введите название задачи",
-            minLength: { value: 2, message: "Минимум 2 символа" },
-          })}
+          {...registerTitle()}
           autoFocus
           className={compactFormControlClass}
           placeholder="Например, сверстать карточку"
