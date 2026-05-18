@@ -79,8 +79,29 @@ const tasksSlice = createSlice({
 
       state.tasks.push(newTask);
     },
+    removeTask(state, action: PayloadAction<string>) {
+      const taskId = action.payload;
+      const removed = state.tasks.find((task) => task.id === taskId);
+      if (!removed) {
+        return;
+      }
+
+      const { status } = removed;
+      state.tasks = state.tasks.filter((task) => task.id !== taskId);
+
+      const columnTasks = state.tasks
+        .filter((task) => task.status === status)
+        .sort((a, b) => a.order - b.order);
+
+      for (const [index, task] of columnTasks.entries()) {
+        const taskInState = state.tasks.find((item) => item.id === task.id);
+        if (taskInState) {
+          taskInState.order = index;
+        }
+      }
+    },
   },
 });
 
-export const { moveTask, addTask } = tasksSlice.actions;
+export const { moveTask, addTask, removeTask } = tasksSlice.actions;
 export const tasksReducer = tasksSlice.reducer;

@@ -77,7 +77,7 @@ export function BoardColumn({
           className="text-muted hover:text-foreground border-accent-soft/80 mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed bg-white/40 px-3 py-2 text-sm font-medium transition-colors hover:bg-white/70"
         >
           <span className="text-lg leading-none">+</span>
-          Добавить карточку
+          Добавить задачу
         </button>
       )}
     </section>
