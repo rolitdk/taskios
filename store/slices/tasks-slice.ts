@@ -1,7 +1,8 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { BoardTask, TaskStatus } from "@/lib/board-types";
-import { initialTasks } from "@/lib/mock-board";
+import { WORK_BOARD_ID } from "@/lib/board-catalog";
+import { buildInitialBoards } from "@/lib/initial-boards";
 import { buildTaskInitials, pickAvatarTone } from "@/lib/task-avatar";
 
 export type CreateTaskPayload = {
@@ -24,11 +25,13 @@ export type MoveTaskPayload = {
 };
 
 type TasksState = {
-  tasks: BoardTask[];
+  activeBoardId: string;
+  boards: Record<string, BoardTask[]>;
 };
 
 const initialState: TasksState = {
-  tasks: initialTasks,
+  activeBoardId: WORK_BOARD_ID,
+  boards: buildInitialBoards(),
 };
 
 function reorderTasks(
@@ -60,17 +63,34 @@ function reorderTasks(
     );
 }
 
+function getActiveTasks(state: TasksState): BoardTask[] {
+  return state.boards[state.activeBoardId] ?? [];
+}
+
+function setActiveTasks(state: TasksState, tasks: BoardTask[]) {
+  state.boards[state.activeBoardId] = tasks;
+}
+
 const tasksSlice = createSlice({
   name: "tasks",
   initialState,
   reducers: {
+    setActiveBoard(state, action: PayloadAction<string>) {
+      if (state.boards[action.payload]) {
+        state.activeBoardId = action.payload;
+      }
+    },
     moveTask(state, action: PayloadAction<MoveTaskPayload>) {
       const { taskId, status, order } = action.payload;
-      state.tasks = reorderTasks(state.tasks, taskId, status, order);
+      setActiveTasks(
+        state,
+        reorderTasks(getActiveTasks(state), taskId, status, order),
+      );
     },
     addTask(state, action: PayloadAction<CreateTaskPayload>) {
       const { title, subtitle, status } = action.payload;
-      const columnTasks = state.tasks.filter((task) => task.status === status);
+      const tasks = getActiveTasks(state);
+      const columnTasks = tasks.filter((task) => task.status === status);
       const nextOrder = columnTasks.length;
 
       const newTask: BoardTask = {
@@ -78,17 +98,18 @@ const tasksSlice = createSlice({
         title: title.trim(),
         subtitle: subtitle.trim() || "Без описания",
         initials: buildTaskInitials(title),
-        avatarTone: pickAvatarTone(state.tasks.length),
+        avatarTone: pickAvatarTone(tasks.length),
         tags: [],
         status,
         order: nextOrder,
       };
 
-      state.tasks.push(newTask);
+      setActiveTasks(state, [...tasks, newTask]);
     },
     updateTask(state, action: PayloadAction<UpdateTaskPayload>) {
       const { taskId, title, subtitle, status } = action.payload;
-      const task = state.tasks.find((item) => item.id === taskId);
+      const tasks = getActiveTasks(state);
+      const task = tasks.find((item) => item.id === taskId);
       if (!task) {
         return;
       }
@@ -106,38 +127,59 @@ const tasksSlice = createSlice({
         return;
       }
 
-      const tasks = state.tasks.map((item) =>
+      const nextTasks = tasks.map((item) =>
         item.id === taskId ? { ...item, ...updatedFields } : item,
       );
-      const newColumnLength = tasks.filter(
+      const newColumnLength = nextTasks.filter(
         (item) => item.status === status && item.id !== taskId,
       ).length;
 
-      state.tasks = reorderTasks(tasks, taskId, status, newColumnLength);
+      setActiveTasks(
+        state,
+        reorderTasks(nextTasks, taskId, status, newColumnLength),
+      );
+    },
+    clearColumnTasks(state, action: PayloadAction<TaskStatus>) {
+      const status = action.payload;
+      setActiveTasks(
+        state,
+        getActiveTasks(state).filter((task) => task.status !== status),
+      );
     },
     removeTask(state, action: PayloadAction<string>) {
       const taskId = action.payload;
-      const removed = state.tasks.find((task) => task.id === taskId);
+      const tasks = getActiveTasks(state);
+      const removed = tasks.find((task) => task.id === taskId);
       if (!removed) {
         return;
       }
 
       const { status } = removed;
-      state.tasks = state.tasks.filter((task) => task.id !== taskId);
+      const withoutRemoved = tasks.filter((task) => task.id !== taskId);
 
-      const columnTasks = state.tasks
+      const columnTasks = withoutRemoved
         .filter((task) => task.status === status)
         .sort((a, b) => a.order - b.order);
 
-      for (const [index, task] of columnTasks.entries()) {
-        const taskInState = state.tasks.find((item) => item.id === task.id);
-        if (taskInState) {
-          taskInState.order = index;
+      const reordered = withoutRemoved.map((item) => {
+        const index = columnTasks.findIndex((task) => task.id === item.id);
+        if (index >= 0) {
+          return { ...item, order: index };
         }
-      }
+        return item;
+      });
+
+      setActiveTasks(state, reordered);
     },
   },
 });
 
-export const { moveTask, addTask, updateTask, removeTask } = tasksSlice.actions;
+export const {
+  setActiveBoard,
+  moveTask,
+  addTask,
+  updateTask,
+  removeTask,
+  clearColumnTasks,
+} = tasksSlice.actions;
 export const tasksReducer = tasksSlice.reducer;

@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { GlobalSearch } from "@/components/taskios/global-search";
+
 type AppShellProps = {
   children: React.ReactNode;
 };
@@ -23,21 +25,7 @@ export function AppShell({ children }: AppShellProps) {
           </Link>
 
           <div className="hidden min-w-0 flex-1 md:block">
-            <label className="relative block">
-              <span className="sr-only">Поиск по доскам</span>
-              <span
-                className="text-muted pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
-                aria-hidden
-              >
-                <SearchIcon />
-              </span>
-              <input
-                type="search"
-                readOnly
-                placeholder="Перейти к…"
-                className="border-accent-soft/80 bg-surface text-foreground placeholder:text-muted w-full rounded-2xl border py-2 pr-4 pl-10 text-sm shadow-sm ring-0 outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-200/80"
-              />
-            </label>
+            <GlobalSearch />
           </div>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
@@ -78,24 +66,6 @@ export function AppShell({ children }: AppShellProps) {
       </header>
       <div className="flex flex-1 flex-col">{children}</div>
     </div>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <path
-        d="M16.5 16.5 21 21"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }
 
