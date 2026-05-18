@@ -1,4 +1,3 @@
-// Мокирование данных для доски задач
 import type { BoardTask, TaskStatus } from "@/lib/board-types";
 
 type MockTaskSeed = Omit<BoardTask, "status" | "order">;

@@ -1,5 +1,4 @@
 "use client";
-// Общая доска задач по статусам
 
 import {
   DndContext,

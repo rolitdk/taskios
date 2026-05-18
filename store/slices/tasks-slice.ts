@@ -10,6 +10,13 @@ export type CreateTaskPayload = {
   status: TaskStatus;
 };
 
+export type UpdateTaskPayload = {
+  taskId: string;
+  title: string;
+  subtitle: string;
+  status: TaskStatus;
+};
+
 export type MoveTaskPayload = {
   taskId: string;
   status: TaskStatus;
@@ -79,6 +86,35 @@ const tasksSlice = createSlice({
 
       state.tasks.push(newTask);
     },
+    updateTask(state, action: PayloadAction<UpdateTaskPayload>) {
+      const { taskId, title, subtitle, status } = action.payload;
+      const task = state.tasks.find((item) => item.id === taskId);
+      if (!task) {
+        return;
+      }
+
+      const trimmedTitle = title.trim();
+      const trimmedSubtitle = subtitle.trim() || "Без описания";
+      const updatedFields = {
+        title: trimmedTitle,
+        subtitle: trimmedSubtitle,
+        initials: buildTaskInitials(trimmedTitle),
+      };
+
+      if (task.status === status) {
+        Object.assign(task, updatedFields);
+        return;
+      }
+
+      const tasks = state.tasks.map((item) =>
+        item.id === taskId ? { ...item, ...updatedFields } : item,
+      );
+      const newColumnLength = tasks.filter(
+        (item) => item.status === status && item.id !== taskId,
+      ).length;
+
+      state.tasks = reorderTasks(tasks, taskId, status, newColumnLength);
+    },
     removeTask(state, action: PayloadAction<string>) {
       const taskId = action.payload;
       const removed = state.tasks.find((task) => task.id === taskId);
@@ -103,5 +139,5 @@ const tasksSlice = createSlice({
   },
 });
 
-export const { moveTask, addTask, removeTask } = tasksSlice.actions;
+export const { moveTask, addTask, updateTask, removeTask } = tasksSlice.actions;
 export const tasksReducer = tasksSlice.reducer;

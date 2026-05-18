@@ -1,5 +1,4 @@
 "use client";
-// Одна колонка доски задач
 
 import { useDroppable } from "@dnd-kit/core";
 import {
@@ -12,7 +11,7 @@ import type {
   TaskStatus,
 } from "@/lib/board-types";
 
-import { CreateTaskForm } from "./create-task-form";
+import { TaskForm } from "./task-form";
 import { SortableTaskCard } from "./sortable-task-card";
 
 type BoardColumnProps = {
@@ -64,7 +63,8 @@ export function BoardColumn({
 
       {isCreating ? (
         <div className="mt-3">
-          <CreateTaskForm
+          <TaskForm
+            mode="create"
             defaultStatus={column.id}
             onCancel={onCancelCreate}
             onCreated={onCancelCreate}

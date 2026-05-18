@@ -1,4 +1,3 @@
-// Форма создания новой задачи
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -7,42 +6,73 @@ import {
   compactFormControlClass,
   FormField,
 } from "@/components/taskios/form-field";
-import type { TaskStatus } from "@/lib/board-types";
+import { useEditTask } from "@/hooks/use-edit-task";
+import type { BoardTask, TaskStatus } from "@/lib/board-types";
 import { COLUMN_DEFINITIONS } from "@/lib/board-types";
 import { useAppDispatch } from "@/store/hooks";
 import { addTask } from "@/store/slices/tasks-slice";
 
-export type CreateTaskFormValues = {
+export type TaskFormValues = {
   title: string;
   subtitle: string;
   status: TaskStatus;
 };
 
-type CreateTaskFormProps = {
+type TaskFormCreateProps = {
+  mode: "create";
   defaultStatus: TaskStatus;
   onCancel: () => void;
   onCreated?: () => void;
 };
 
-export function CreateTaskForm({
-  defaultStatus,
-  onCancel,
-  onCreated,
-}: CreateTaskFormProps) {
+type TaskFormEditProps = {
+  mode: "edit";
+  task: BoardTask;
+  onCancel: () => void;
+  onSaved?: () => void;
+};
+
+export type TaskFormProps = TaskFormCreateProps | TaskFormEditProps;
+
+function subtitleToFieldValue(subtitle: string) {
+  return subtitle === "Без описания" ? "" : subtitle;
+}
+
+export function TaskForm(props: TaskFormProps) {
   const dispatch = useAppDispatch();
+  const { editTask } = useEditTask();
+
+  const defaultValues: TaskFormValues =
+    props.mode === "edit"
+      ? {
+          title: props.task.title,
+          subtitle: subtitleToFieldValue(props.task.subtitle),
+          status: props.task.status,
+        }
+      : {
+          title: "",
+          subtitle: "",
+          status: props.defaultStatus,
+        };
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<CreateTaskFormValues>({
-    defaultValues: {
-      title: "",
-      subtitle: "",
-      status: defaultStatus,
-    },
-  });
+  } = useForm<TaskFormValues>({ defaultValues });
 
   const onSubmit = handleSubmit((values) => {
+    if (props.mode === "edit") {
+      editTask({
+        taskId: props.task.id,
+        title: values.title,
+        subtitle: values.subtitle,
+        status: values.status,
+      });
+      props.onSaved?.();
+      return;
+    }
+
     dispatch(
       addTask({
         title: values.title,
@@ -50,8 +80,10 @@ export function CreateTaskForm({
         status: values.status,
       }),
     );
-    onCreated?.();
+    props.onCreated?.();
   });
+
+  const submitLabel = props.mode === "edit" ? "Сохранить" : "Создать";
 
   return (
     <form
@@ -94,11 +126,11 @@ export function CreateTaskForm({
           disabled={isSubmitting}
           className="bg-accent hover:bg-accent-strong flex-1 rounded-xl px-3 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60"
         >
-          Создать
+          {submitLabel}
         </button>
         <button
           type="button"
-          onClick={onCancel}
+          onClick={props.onCancel}
           className="text-muted hover:text-foreground border-accent-soft/80 rounded-xl border bg-white/60 px-3 py-2 text-sm font-medium transition-colors"
         >
           Отмена

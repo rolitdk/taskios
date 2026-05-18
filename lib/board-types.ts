@@ -1,4 +1,3 @@
-// Типы для доски задач
 export type TaskTag = {
   label: string;
   tone: "pink" | "purple" | "mint";

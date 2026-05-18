@@ -1,4 +1,3 @@
-// Обертка шапки для всех страниц
 import Link from "next/link";
 
 type AppShellProps = {
