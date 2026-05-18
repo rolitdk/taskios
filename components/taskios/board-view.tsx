@@ -20,15 +20,21 @@ import { moveTask } from "@/store/slices/tasks-slice";
 
 import { BoardColumn } from "./board-column";
 import { TaskCard } from "./task-card";
+import { TaskForm } from "./task-form";
+import { TaskModal } from "./task-modal";
+
+type TaskModalState =
+  | { kind: "create"; status: TaskStatus }
+  | { kind: "edit"; task: BoardTask };
 
 export function BoardView() {
   const dispatch = useAppDispatch();
   const columns = useAppSelector(selectBoardColumns);
   const tasks = useAppSelector((state) => state.tasks.tasks);
   const [activeTask, setActiveTask] = useState<BoardTask | null>(null);
-  const [creatingInColumn, setCreatingInColumn] = useState<TaskStatus | null>(
-    null,
-  );
+  const [taskModal, setTaskModal] = useState<TaskModalState | null>(null);
+
+  const closeTaskModal = () => setTaskModal(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -108,12 +114,42 @@ export function BoardView() {
           <BoardColumn
             key={column.id}
             column={column}
-            isCreating={creatingInColumn === column.id}
-            onStartCreate={(status) => setCreatingInColumn(status)}
-            onCancelCreate={() => setCreatingInColumn(null)}
+            onStartCreate={(status) =>
+              setTaskModal({ kind: "create", status })
+            }
+            onEditTask={(task) => setTaskModal({ kind: "edit", task })}
           />
         ))}
       </div>
+
+      <TaskModal
+        open={taskModal !== null}
+        onClose={closeTaskModal}
+        title={
+          taskModal?.kind === "edit"
+            ? "Редактирование задачи"
+            : "Новая задача"
+        }
+      >
+        {taskModal?.kind === "create" ? (
+          <TaskForm
+            key={`create-${taskModal.status}`}
+            mode="create"
+            defaultStatus={taskModal.status}
+            onCancel={closeTaskModal}
+            onCreated={closeTaskModal}
+          />
+        ) : null}
+        {taskModal?.kind === "edit" ? (
+          <TaskForm
+            key={`edit-${taskModal.task.id}`}
+            mode="edit"
+            task={taskModal.task}
+            onCancel={closeTaskModal}
+            onSaved={closeTaskModal}
+          />
+        ) : null}
+      </TaskModal>
 
       <DragOverlay dropAnimation={null}>
         {activeTask ? (
