@@ -95,7 +95,7 @@ export function BoardColumn({
                 disabled={isEmpty}
                 className="text-foreground hover:bg-column-bg disabled:text-muted w-full px-3 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:hover:bg-transparent"
               >
-                Очистить колонку
+                Удалить все задачи
               </button>
             </div>
           ) : null}
