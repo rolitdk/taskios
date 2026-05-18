@@ -40,7 +40,7 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
         </span>
       </div>
 
-      <BoardView />
+      <BoardView boardId={boardId} />
     </main>
   );
 }
