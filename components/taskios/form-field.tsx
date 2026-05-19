@@ -6,17 +6,22 @@ export const compactFormControlClass =
 type FormFieldProps = {
   label: string;
   error?: string;
+  hint?: string;
   children: ReactNode;
 };
 
-export function FormField({ label, error, children }: FormFieldProps) {
+export function FormField({ label, error, hint, children }: FormFieldProps) {
   return (
     <div>
       <label className="text-foreground mb-1 block text-xs font-medium">
         {label}
       </label>
       {children}
-      {error ? <p className="mt-1 text-xs text-pink-700">{error}</p> : null}
+      {error ? (
+        <p className="mt-1 text-xs text-pink-700">{error}</p>
+      ) : hint ? (
+        <p className="text-muted mt-1 text-xs">{hint}</p>
+      ) : null}
     </div>
   );
 }

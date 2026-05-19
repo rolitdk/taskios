@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { AppShellSearchSlot } from "@/components/taskios/app-shell-search-slot";
+import { AppShellUserMenu } from "@/components/taskios/app-shell-user-menu";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -41,24 +42,7 @@ export function AppShell({ children }: AppShellProps) {
             >
               <BellIcon />
             </button>
-            <div
-              className="bg-accent-soft text-accent-strong hidden h-9 w-9 items-center justify-center rounded-full text-xs font-semibold sm:flex"
-              aria-hidden
-            >
-              Вы
-            </div>
-            <Link
-              href="/login"
-              className="text-muted hover:text-foreground rounded-xl px-2 py-2 text-sm font-medium sm:px-3"
-            >
-              Вход
-            </Link>
-            <Link
-              href="/register"
-              className="bg-surface text-foreground border-accent-soft/80 rounded-2xl border px-2 py-2 text-sm font-semibold shadow-sm transition-colors hover:border-purple-300 sm:px-3"
-            >
-              Регистрация
-            </Link>
+            <AppShellUserMenu />
           </div>
         </div>
       </header>

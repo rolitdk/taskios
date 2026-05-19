@@ -9,11 +9,9 @@ import { FormField } from "@/components/taskios/form-field";
 import { useAuth } from "@/components/providers/auth-provider";
 import type { PublicUser } from "@/lib/auth-types";
 
-type RegisterFormValues = {
-  name: string;
+type LoginFormValues = {
   email: string;
   password: string;
-  confirmPassword: string;
 };
 
 type ApiErrorBody = {
@@ -23,12 +21,10 @@ type ApiErrorBody = {
   };
 };
 
-const PASSWORD_MIN_LENGTH = 8;
-
 const inputClassName =
   "border-accent-soft/80 text-foreground placeholder:text-muted w-full rounded-2xl border bg-white px-4 py-3 text-sm shadow-sm outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-200/80";
 
-export function RegisterForm() {
+export function LoginForm() {
   const router = useRouter();
   const { setUser } = useAuth();
   const [serverError, setServerError] = useState<string | null>(null);
@@ -36,38 +32,21 @@ export function RegisterForm() {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterFormValues>({
+  } = useForm<LoginFormValues>({
     defaultValues: {
-      name: "",
       email: "",
       password: "",
-      confirmPassword: "",
     },
   });
-
-  const password = watch("password");
-  const confirmPassword = watch("confirmPassword");
-
-  const passwordHint =
-    password.length > 0 && password.length < PASSWORD_MIN_LENGTH
-      ? `Пароль должен содержать ${PASSWORD_MIN_LENGTH} символов`
-      : undefined;
-
-  const confirmPasswordHint =
-    confirmPassword.length > 0 && confirmPassword !== password
-      ? "Пароли не совпадают"
-      : undefined;
 
   const onSubmit = handleSubmit(async (values) => {
     setServerError(null);
 
-    const response = await fetch("/api/auth/register", {
+    const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: values.name,
         email: values.email,
         password: values.password,
       }),
@@ -81,7 +60,7 @@ export function RegisterForm() {
       return;
     }
 
-    let message = "Не удалось создать аккаунт. Попробуйте позже.";
+    let message = "Не удалось войти. Проверьте email и пароль.";
     try {
       const body = (await response.json()) as ApiErrorBody;
       if (body.error?.message) {
@@ -94,39 +73,23 @@ export function RegisterForm() {
     setServerError(message);
   });
 
-
   return (
     <>
       <h1 className="text-foreground text-2xl font-bold tracking-tight">
-        Регистрация в Taskios
+        Вход в Taskios
       </h1>
       <p className="text-muted mt-2 text-sm">
-        Создайте аккаунт, чтобы сохранять проекты и задачи.
+        Войдите, чтобы сохранять проекты и задачи.
       </p>
       <form
         className="mt-8 space-y-4"
         onSubmit={onSubmit}
         noValidate
-        aria-label="Форма регистрации"
+        aria-label="Форма входа"
       >
-        <FormField label="Имя" error={errors.name?.message}>
-          <input
-            id="register-name"
-            type="text"
-            autoComplete="name"
-            placeholder="Как к вам обращаться"
-            className={inputClassName}
-            {...register("name", {
-              required: "Введите имя",
-              minLength: { value: 2, message: "Минимум 2 символа" },
-              maxLength: { value: 100, message: "Не более 100 символов" },
-            })}
-          />
-        </FormField>
-
         <FormField label="Email" error={errors.email?.message}>
           <input
-            id="register-email"
+            id="login-email"
             type="email"
             autoComplete="email"
             placeholder="you@example.com"
@@ -141,43 +104,15 @@ export function RegisterForm() {
           />
         </FormField>
 
-        <FormField
-          label="Пароль"
-          error={errors.password?.message}
-          hint={passwordHint}
-        >
+        <FormField label="Пароль" error={errors.password?.message}>
           <input
-            id="register-password"
+            id="login-password"
             type="password"
-            autoComplete="new-password"
-            placeholder="Не менее 8 символов"
+            autoComplete="current-password"
+            placeholder="••••••••"
             className={inputClassName}
             {...register("password", {
               required: "Введите пароль",
-              minLength: {
-                value: PASSWORD_MIN_LENGTH,
-                message: `Минимум ${PASSWORD_MIN_LENGTH} символов`,
-              },
-              maxLength: { value: 128, message: "Не более 128 символов" },
-            })}
-          />
-        </FormField>
-
-        <FormField
-          label="Подтверждение пароля"
-          error={errors.confirmPassword?.message}
-          hint={confirmPasswordHint}
-        >
-          <input
-            id="register-confirm-password"
-            type="password"
-            autoComplete="new-password"
-            placeholder="Повторите пароль"
-            className={inputClassName}
-            {...register("confirmPassword", {
-              required: "Подтвердите пароль",
-              validate: (value, formValues) =>
-                value === formValues.password || "Пароли не совпадают",
             })}
           />
         </FormField>
@@ -196,17 +131,17 @@ export function RegisterForm() {
           disabled={isSubmitting}
           className="bg-accent-strong w-full rounded-2xl py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {isSubmitting ? "Создаём аккаунт…" : "Создать аккаунт"}
+          {isSubmitting ? "Входим…" : "Войти"}
         </button>
       </form>
 
       <p className="text-muted mt-6 text-center text-sm">
-        Уже есть аккаунт?{" "}
+        Нет аккаунта?{" "}
         <Link
-          href="/login"
+          href="/register"
           className="text-accent-strong font-semibold underline-offset-2 hover:text-purple-900 hover:underline"
         >
-          Вход
+          Регистрация
         </Link>
       </p>
       <p className="mt-4 text-center">
