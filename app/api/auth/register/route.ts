@@ -1,10 +1,6 @@
+import { hashPassword } from "@/lib/server/auth";
 import { db } from "@/lib/server/db";
-import {
-  createTokenPair,
-  hashPassword,
-  setAuthCookies,
-} from "@/lib/server/auth";
-import { created, apiError } from "@/lib/server/http";
+import { apiError, created } from "@/lib/server/http";
 import { toPublicUser } from "@/lib/server/serializers";
 import { formatZodErrorMessage, registerSchema } from "@/lib/server/validation";
 
@@ -40,19 +36,10 @@ export async function POST(request: Request): Promise<Response> {
       },
     });
 
-    const tokenPair = await createTokenPair(user.id);
-    const refreshTokenHash = await hashPassword(tokenPair.refreshToken);
-
-    await db.user.update({
-      where: { id: user.id },
-      data: { refreshTokenHash },
-    });
-
-    const response = created({
+    return created({
       user: toPublicUser(user),
+      message: "Аккаунт создан. Теперь вы можете войти.",
     });
-    setAuthCookies(response, tokenPair);
-    return response;
   } catch (error) {
     if (error instanceof SyntaxError) {
       return apiError(400, "INVALID_JSON", "Некорректный JSON");
