@@ -18,7 +18,7 @@ export function BoardsList() {
           <li key={board.id}>
             <Link
               href={board.href}
-              className="bg-surface text-foreground hover:border-purple-300 block rounded-2xl border border-transparent px-4 py-3 text-sm font-medium shadow-sm ring-1 ring-black/5 transition-colors"
+              className="bg-surface text-foreground block rounded-2xl border border-transparent px-4 py-3 text-sm font-medium shadow-sm ring-1 ring-black/5 transition-colors hover:border-purple-300"
             >
               {board.title}
             </Link>

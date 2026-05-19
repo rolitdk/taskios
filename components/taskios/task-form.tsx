@@ -66,7 +66,7 @@ export function TaskForm(props: TaskFormProps) {
       required: "Введите название задачи",
       minLength: { value: 2, message: "Минимум 2 символа" },
     });
-  }
+  };
 
   const onSubmit = handleSubmit((values) => {
     if (props.mode === "edit") {

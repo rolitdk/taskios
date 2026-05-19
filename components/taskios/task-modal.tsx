@@ -15,7 +15,11 @@ function subscribe() {
 }
 
 export function TaskModal({ open, onClose, title, children }: TaskModalProps) {
-  const mounted = useSyncExternalStore(subscribe, () => true, () => false);
+  const mounted = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     if (!open) {

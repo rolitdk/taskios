@@ -39,9 +39,7 @@ export function BoardView({ boardId }: BoardViewProps) {
   const columns = useAppSelector((state) =>
     selectBoardColumnsForBoard(state, boardId),
   );
-  const tasks = useAppSelector((state) =>
-    selectBoardTasksById(state, boardId),
-  );
+  const tasks = useAppSelector((state) => selectBoardTasksById(state, boardId));
   const [activeTask, setActiveTask] = useState<BoardTask | null>(null);
   const [taskModal, setTaskModal] = useState<TaskModalState | null>(null);
 
@@ -125,9 +123,7 @@ export function BoardView({ boardId }: BoardViewProps) {
           <BoardColumn
             key={column.id}
             column={column}
-            onStartCreate={(status) =>
-              setTaskModal({ kind: "create", status })
-            }
+            onStartCreate={(status) => setTaskModal({ kind: "create", status })}
             onEditTask={(task) => setTaskModal({ kind: "edit", task })}
           />
         ))}
@@ -137,9 +133,7 @@ export function BoardView({ boardId }: BoardViewProps) {
         open={taskModal !== null}
         onClose={closeTaskModal}
         title={
-          taskModal?.kind === "edit"
-            ? "Редактирование задачи"
-            : "Новая задача"
+          taskModal?.kind === "edit" ? "Редактирование задачи" : "Новая задача"
         }
       >
         {taskModal?.kind === "create" ? (

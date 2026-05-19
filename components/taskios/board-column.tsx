@@ -41,10 +41,7 @@ export function BoardColumn({
     }
 
     const handlePointerDown = (event: PointerEvent) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node)
-      ) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
     };
@@ -110,11 +107,7 @@ export function BoardColumn({
             </li>
           ) : (
             column.tasks.map((task) => (
-              <SortableTaskCard
-                key={task.id}
-                task={task}
-                onEdit={onEditTask}
-              />
+              <SortableTaskCard key={task.id} task={task} onEdit={onEditTask} />
             ))
           )}
         </ul>

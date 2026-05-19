@@ -174,8 +174,6 @@ export function buildInitialBoards(): Record<string, BoardTask[]> {
   );
 }
 
-export function getMockBoard(
-  boardId: string,
-): MockBoardDefinition | undefined {
+export function getMockBoard(boardId: string): MockBoardDefinition | undefined {
   return MOCK_BOARDS.find((board) => board.id === boardId);
 }

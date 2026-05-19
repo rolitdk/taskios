@@ -3,10 +3,7 @@
 import { useCallback } from "react";
 
 import { useAppDispatch } from "@/store/hooks";
-import {
-  updateTask,
-  type UpdateTaskPayload,
-} from "@/store/slices/tasks-slice";
+import { updateTask, type UpdateTaskPayload } from "@/store/slices/tasks-slice";
 
 export function useEditTask() {
   const dispatch = useAppDispatch();

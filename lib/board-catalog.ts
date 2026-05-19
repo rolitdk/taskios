@@ -20,13 +20,11 @@ function boardHref(boardId: string): string {
   return `/boards/${boardId}`;
 }
 
-export const ALL_BOARD_METAS: BoardCatalogMeta[] = MOCK_BOARDS.map(
-  (board) => ({
-    id: board.id,
-    title: board.title,
-    href: boardHref(board.id),
-  }),
-);
+export const ALL_BOARD_METAS: BoardCatalogMeta[] = MOCK_BOARDS.map((board) => ({
+  id: board.id,
+  title: board.title,
+  href: boardHref(board.id),
+}));
 
 export function getBoardMeta(boardId: string): BoardCatalogMeta | undefined {
   return ALL_BOARD_METAS.find((board) => board.id === boardId);
@@ -54,7 +52,11 @@ export function filterSearchableTasks(
   }
 
   return entries.filter(({ task }) => {
-    const haystack = [task.title, task.subtitle, ...task.tags.map((t) => t.label)]
+    const haystack = [
+      task.title,
+      task.subtitle,
+      ...task.tags.map((t) => t.label),
+    ]
       .join(" ")
       .toLowerCase();
     return haystack.includes(normalized);
