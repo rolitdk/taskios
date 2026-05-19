@@ -5,10 +5,30 @@ import {
   type BoardColumn,
   type BoardTask,
 } from "@/lib/board-types";
+import type { BoardCatalogMeta } from "@/lib/board-catalog";
 import type { RootState } from "@/store/store";
+
+function boardHref(boardId: string): string {
+  return `/boards/${boardId}`;
+}
 
 const selectActiveBoardId = (state: RootState) => state.tasks.activeBoardId;
 const selectBoards = (state: RootState) => state.tasks.boards;
+const selectBoardMetas = (state: RootState) => state.tasks.boardMetas;
+
+export const selectAllBoardMetas = createSelector(
+  [selectBoardMetas],
+  (metas): BoardCatalogMeta[] =>
+    metas.map((meta) => ({
+      ...meta,
+      href: boardHref(meta.id),
+    })),
+);
+
+export const selectBoardMetaById = createSelector(
+  [selectAllBoardMetas, (_state: RootState, boardId: string) => boardId],
+  (metas, boardId) => metas.find((meta) => meta.id === boardId),
+);
 
 function buildBoardColumns(tasks: BoardTask[]): BoardColumn[] {
   return COLUMN_DEFINITIONS.map((column) => ({

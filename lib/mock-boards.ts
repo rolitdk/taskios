@@ -174,6 +174,10 @@ export function buildInitialBoards(): Record<string, BoardTask[]> {
   );
 }
 
+export function buildInitialBoardMetas(): { id: string; title: string }[] {
+  return MOCK_BOARDS.map(({ id, title }) => ({ id, title }));
+}
+
 export function getMockBoard(boardId: string): MockBoardDefinition | undefined {
   return MOCK_BOARDS.find((board) => board.id === boardId);
 }

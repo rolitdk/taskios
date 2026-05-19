@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { GlobalSearch } from "@/components/taskios/global-search";
+import { AppShellSearchSlot } from "@/components/taskios/app-shell-search-slot";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -24,9 +24,7 @@ export function AppShell({ children }: AppShellProps) {
             Taskios
           </Link>
 
-          <div className="hidden min-w-0 flex-1 md:block">
-            <GlobalSearch />
-          </div>
+          <AppShellSearchSlot />
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
             <button

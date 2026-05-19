@@ -1,19 +1,30 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 import { BoardView } from "@/components/taskios/board-view";
 import { useActiveBoard } from "@/hooks/use-active-board";
-import { getBoardMeta } from "@/lib/board-catalog";
+import { useAppSelector } from "@/store/hooks";
+import { selectBoardMetaById } from "@/store/selectors/board-selectors";
 
 type BoardPageClientProps = {
   boardId: string;
 };
 
 export function BoardPageClient({ boardId }: BoardPageClientProps) {
+  const router = useRouter();
   useActiveBoard(boardId);
 
-  const board = getBoardMeta(boardId);
+  const board = useAppSelector((state) => selectBoardMetaById(state, boardId));
+
+  useEffect(() => {
+    if (!board) {
+      router.replace("/");
+    }
+  }, [board, router]);
+
   if (!board) {
     return null;
   }

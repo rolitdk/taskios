@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { BoardTask, TaskStatus } from "@/lib/board-types";
 import { WORK_BOARD_ID } from "@/lib/board-catalog";
-import { buildInitialBoards } from "@/lib/mock-boards";
+import { buildInitialBoardMetas, buildInitialBoards } from "@/lib/mock-boards";
 import { buildTaskInitials, pickAvatarTone } from "@/lib/task-avatar";
 
 export type CreateTaskPayload = {
@@ -24,13 +24,20 @@ export type MoveTaskPayload = {
   order: number;
 };
 
+export type BoardMeta = {
+  id: string;
+  title: string;
+};
+
 type TasksState = {
   activeBoardId: string;
+  boardMetas: BoardMeta[];
   boards: Record<string, BoardTask[]>;
 };
 
 const initialState: TasksState = {
   activeBoardId: WORK_BOARD_ID,
+  boardMetas: buildInitialBoardMetas(),
   boards: buildInitialBoards(),
 };
 
@@ -78,6 +85,32 @@ const tasksSlice = createSlice({
     setActiveBoard(state, action: PayloadAction<string>) {
       if (state.boards[action.payload]) {
         state.activeBoardId = action.payload;
+      }
+    },
+    updateBoardTitle(
+      state,
+      action: PayloadAction<{ boardId: string; title: string }>,
+    ) {
+      const { boardId, title } = action.payload;
+      const meta = state.boardMetas.find((board) => board.id === boardId);
+      if (!meta) {
+        return;
+      }
+      meta.title = title.trim();
+    },
+    removeBoard(state, action: PayloadAction<string>) {
+      const boardId = action.payload;
+      const exists = state.boardMetas.some((board) => board.id === boardId);
+      if (!exists) {
+        return;
+      }
+
+      state.boardMetas = state.boardMetas.filter((board) => board.id !== boardId);
+      delete state.boards[boardId];
+
+      if (state.activeBoardId === boardId) {
+        state.activeBoardId =
+          state.boardMetas[0]?.id ?? state.activeBoardId;
       }
     },
     moveTask(state, action: PayloadAction<MoveTaskPayload>) {
@@ -176,6 +209,8 @@ const tasksSlice = createSlice({
 
 export const {
   setActiveBoard,
+  updateBoardTitle,
+  removeBoard,
   moveTask,
   addTask,
   updateTask,
