@@ -41,3 +41,17 @@ body {
 button {
   cursor: pointer;
 }
+
+@keyframes task-highlight {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-strong) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-strong) 35%, transparent);
+  }
+}
+
+.animate-task-highlight {
+  animation: task-highlight 1.2s ease-in-out 2;
+}

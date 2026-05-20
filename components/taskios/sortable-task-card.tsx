@@ -2,16 +2,23 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useEffect, useRef } from "react";
 import type { BoardTask } from "@/lib/board-types";
 
 import { TaskCard } from "./task-card";
 
 type SortableTaskCardProps = {
   task: BoardTask;
+  highlighted?: boolean;
   onEdit: (task: BoardTask) => void;
 };
 
-export function SortableTaskCard({ task, onEdit }: SortableTaskCardProps) {
+export function SortableTaskCard({
+  task,
+  highlighted = false,
+  onEdit,
+}: SortableTaskCardProps) {
+  const cardRef = useRef<HTMLLIElement>(null);
   const {
     attributes,
     listeners,
@@ -26,15 +33,40 @@ export function SortableTaskCard({ task, onEdit }: SortableTaskCardProps) {
     transition,
   };
 
+  useEffect(() => {
+    if (!highlighted || !cardRef.current) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      cardRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [highlighted]);
+
   return (
     <li
-      ref={setNodeRef}
+      ref={(node) => {
+        setNodeRef(node);
+        cardRef.current = node;
+      }}
       style={style}
       className={isDragging ? "opacity-40" : undefined}
       {...attributes}
       {...listeners}
     >
-      <TaskCard task={task} onEdit={() => onEdit(task)} />
+      <TaskCard
+        task={task}
+        highlighted={highlighted}
+        onEdit={() => onEdit(task)}
+      />
     </li>
   );
 }

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
+  boardHrefWithHighlightTask,
   filterSearchableTasks,
   type SearchableTaskEntry,
 } from "@/lib/board-catalog";
@@ -42,7 +43,7 @@ export function useTaskSearch() {
       setQuery("");
       setDebouncedQuery("");
       setIsOpen(false);
-      router.push(entry.boardHref);
+      router.push(boardHrefWithHighlightTask(entry.boardId, entry.task.id));
     },
     [router],
   );

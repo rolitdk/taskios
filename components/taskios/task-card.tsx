@@ -12,15 +12,27 @@ import { useDeleteTask } from "@/hooks/use-delete-task";
 type TaskCardProps = {
   task: BoardTask;
   showDelete?: boolean;
+  highlighted?: boolean;
   onEdit?: () => void;
 };
 
-export function TaskCard({ task, showDelete = true, onEdit }: TaskCardProps) {
+export function TaskCard({
+  task,
+  showDelete = true,
+  highlighted = false,
+  onEdit,
+}: TaskCardProps) {
   const { deleteTask } = useDeleteTask();
   const showActions = showDelete || onEdit;
 
   return (
-    <article className="bg-surface relative flex cursor-grab gap-3 rounded-2xl p-3 pr-14 shadow-sm ring-1 ring-black/5 active:cursor-grabbing">
+    <article
+      className={`bg-surface relative flex cursor-grab gap-3 rounded-2xl p-3 pr-14 shadow-sm active:cursor-grabbing ${
+        highlighted
+          ? "ring-accent-strong animate-task-highlight shadow-md ring-2 ring-offset-2 ring-offset-column-bg"
+          : "ring-1 ring-black/5"
+      }`}
+    >
       {showActions ? (
         <div className="absolute top-2 right-2 flex items-center gap-0.5">
           {onEdit ? (

@@ -32,9 +32,10 @@ type TaskModalState =
 
 type BoardViewProps = {
   boardId: string;
+  highlightedTaskId?: string | null;
 };
 
-export function BoardView({ boardId }: BoardViewProps) {
+export function BoardView({ boardId, highlightedTaskId }: BoardViewProps) {
   const dispatch = useAppDispatch();
   const columns = useAppSelector((state) =>
     selectBoardColumnsForBoard(state, boardId),
@@ -123,6 +124,7 @@ export function BoardView({ boardId }: BoardViewProps) {
           <BoardColumn
             key={column.id}
             column={column}
+            highlightedTaskId={highlightedTaskId}
             onStartCreate={(status) => setTaskModal({ kind: "create", status })}
             onEditTask={(task) => setTaskModal({ kind: "edit", task })}
           />

@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 import { BoardView } from "@/components/taskios/board-view";
 import { useActiveBoard } from "@/hooks/use-active-board";
+import { BOARD_HIGHLIGHT_TASK_QUERY } from "@/lib/board-catalog";
 import { useAppSelector } from "@/store/hooks";
 import { selectBoardMetaById } from "@/store/selectors/board-selectors";
+
+const HIGHLIGHT_DURATION_MS = 3500;
 
 type BoardPageClientProps = {
   boardId: string;
@@ -15,9 +18,26 @@ type BoardPageClientProps = {
 
 export function BoardPageClient({ boardId }: BoardPageClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const highlightedTaskId = searchParams.get(BOARD_HIGHLIGHT_TASK_QUERY);
   useActiveBoard(boardId);
 
   const board = useAppSelector((state) => selectBoardMetaById(state, boardId));
+
+  useEffect(() => {
+    if (!highlightedTaskId) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      router.replace(pathname, { scroll: false });
+    }, HIGHLIGHT_DURATION_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [highlightedTaskId, pathname, router]);
 
   useEffect(() => {
     if (!board) {
@@ -51,7 +71,7 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
         </span>
       </div>
 
-      <BoardView boardId={boardId} />
+      <BoardView boardId={boardId} highlightedTaskId={highlightedTaskId} />
     </main>
   );
 }

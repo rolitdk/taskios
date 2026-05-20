@@ -16,8 +16,17 @@ export type SearchableTaskEntry = {
   boardHref: string;
 };
 
+export const BOARD_HIGHLIGHT_TASK_QUERY = "task";
+
 function boardHref(boardId: string): string {
   return `/boards/${boardId}`;
+}
+
+export function boardHrefWithHighlightTask(
+  boardId: string,
+  taskId: string,
+): string {
+  return `${boardHref(boardId)}?${BOARD_HIGHLIGHT_TASK_QUERY}=${encodeURIComponent(taskId)}`;
 }
 
 export const ALL_BOARD_METAS: BoardCatalogMeta[] = MOCK_BOARDS.map((board) => ({

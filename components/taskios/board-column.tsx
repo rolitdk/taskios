@@ -19,12 +19,14 @@ import { SortableTaskCard } from "./sortable-task-card";
 
 type BoardColumnProps = {
   column: BoardColumnType;
+  highlightedTaskId?: string | null;
   onStartCreate: (status: TaskStatus) => void;
   onEditTask: (task: BoardTask) => void;
 };
 
 export function BoardColumn({
   column,
+  highlightedTaskId,
   onStartCreate,
   onEditTask,
 }: BoardColumnProps) {
@@ -107,7 +109,12 @@ export function BoardColumn({
             </li>
           ) : (
             column.tasks.map((task) => (
-              <SortableTaskCard key={task.id} task={task} onEdit={onEditTask} />
+              <SortableTaskCard
+                key={task.id}
+                task={task}
+                highlighted={task.id === highlightedTaskId}
+                onEdit={onEditTask}
+              />
             ))
           )}
         </ul>
