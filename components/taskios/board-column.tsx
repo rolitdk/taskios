@@ -15,6 +15,7 @@ import type {
 import { useAppDispatch } from "@/store/hooks";
 import { clearColumnTasks } from "@/store/slices/tasks-slice";
 
+import { TaskModal } from "./task-modal";
 import { SortableTaskCard } from "./sortable-task-card";
 
 type BoardColumnProps = {
@@ -34,6 +35,7 @@ export function BoardColumn({
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
   const taskIds = column.tasks.map((task) => task.id);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [clearColumnOpen, setClearColumnOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const isEmpty = column.tasks.length === 0;
 
@@ -52,9 +54,16 @@ export function BoardColumn({
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [menuOpen]);
 
-  const handleClearColumn = () => {
-    dispatch(clearColumnTasks(column.id));
+  const openClearColumnModal = () => {
     setMenuOpen(false);
+    setClearColumnOpen(true);
+  };
+
+  const closeClearColumnModal = () => setClearColumnOpen(false);
+
+  const confirmClearColumn = () => {
+    dispatch(clearColumnTasks(column.id));
+    closeClearColumnModal();
   };
 
   return (
@@ -90,7 +99,7 @@ export function BoardColumn({
               <button
                 type="button"
                 role="menuitem"
-                onClick={handleClearColumn}
+                onClick={openClearColumnModal}
                 disabled={isEmpty}
                 className="text-foreground hover:bg-column-bg disabled:text-muted w-full px-3 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:hover:bg-transparent"
               >
@@ -128,6 +137,34 @@ export function BoardColumn({
         <span className="text-lg leading-none">+</span>
         Добавить задачу
       </button>
+
+      <TaskModal
+        open={clearColumnOpen}
+        onClose={closeClearColumnModal}
+        title="Очистка колонки"
+      >
+        <div className="bg-surface space-y-4 rounded-2xl p-3 shadow-sm ring-1 ring-black/5">
+          <p className="text-foreground text-sm leading-relaxed">
+            Вы уверены, что хотите удалить все задачи в колонке «{column.title}»?
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={confirmClearColumn}
+              className="bg-accent hover:bg-accent-strong flex-1 rounded-xl px-3 py-2 text-sm font-semibold text-white transition-colors"
+            >
+              Удалить
+            </button>
+            <button
+              type="button"
+              onClick={closeClearColumnModal}
+              className="text-muted hover:text-foreground border-accent-soft/80 rounded-xl border bg-white/60 px-3 py-2 text-sm font-medium transition-colors"
+            >
+              Отмена
+            </button>
+          </div>
+        </div>
+      </TaskModal>
     </section>
   );
 }
