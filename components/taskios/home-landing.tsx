@@ -46,7 +46,7 @@ export function HomeLanding() {
             href="/login"
             className="text-accent-strong hover:text-foreground border-accent-soft/80 inline-flex items-center justify-center rounded-2xl border bg-white/60 px-6 py-3 text-center text-sm font-semibold transition-colors"
           >
-            Уже есть аккаунт — войти
+            Уже есть аккаунт
           </Link>
         </div>
       </div>

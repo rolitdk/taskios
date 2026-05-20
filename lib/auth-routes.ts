@@ -10,18 +10,19 @@ export function isLandingPagePath(pathname: string): boolean {
   return pathname === "/";
 }
 
-/**
- * Канбан с мок-данными в Redux — пока доступен без авторизации.
- * Уберите из публичных путей, когда будет готов вход.
- */
-export function isMockDataPagePath(pathname: string): boolean {
-  return pathname === "/boards" || pathname.startsWith("/boards/");
+export function isPublicPagePath(pathname: string): boolean {
+  return isLandingPagePath(pathname) || isAuthPagePath(pathname);
 }
 
-export function isPublicPagePath(pathname: string): boolean {
-  return (
-    isLandingPagePath(pathname) ||
-    isAuthPagePath(pathname) ||
-    isMockDataPagePath(pathname)
-  );
+/** Безопасный путь после входа (параметр `from` из middleware). */
+export function getPostLoginRedirectPath(from: string | null | undefined): string {
+  if (!from || !from.startsWith("/") || from.startsWith("//")) {
+    return "/boards";
+  }
+
+  if (isPublicPagePath(from)) {
+    return "/boards";
+  }
+
+  return from;
 }

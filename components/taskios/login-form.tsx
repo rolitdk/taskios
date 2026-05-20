@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { FormField } from "@/components/taskios/form-field";
 import { useAuth } from "@/components/providers/auth-provider";
 import type { PublicUser } from "@/lib/auth-types";
+import { getPostLoginRedirectPath } from "@/lib/auth-routes";
 
 type LoginFormValues = {
   email: string;
@@ -26,6 +27,7 @@ const inputClassName =
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setUser } = useAuth();
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -55,7 +57,7 @@ export function LoginForm() {
     if (response.ok) {
       const data = (await response.json()) as { user: PublicUser };
       setUser(data.user);
-      router.replace("/boards");
+      router.replace(getPostLoginRedirectPath(searchParams.get("from")));
       router.refresh();
       return;
     }
