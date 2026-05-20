@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AppShellFooter } from "@/components/taskios/app-shell-footer";
 import { AppShellSearchSlot } from "@/components/taskios/app-shell-search-slot";
 import { AppShellUserMenu } from "@/components/taskios/app-shell-user-menu";
 
@@ -47,6 +48,7 @@ export function AppShell({ children }: AppShellProps) {
         </div>
       </header>
       <div className="flex flex-1 flex-col">{children}</div>
+      <AppShellFooter />
     </div>
   );
 }
