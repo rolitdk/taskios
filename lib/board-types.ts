@@ -1,6 +1,8 @@
+import type { TagTone } from "@/lib/tag-tones";
+
 export type TaskTag = {
   label: string;
-  tone: "pink" | "purple" | "mint";
+  tone: TagTone;
 };
 
 export type AvatarTone = "soft" | "muted" | "shell" | "accent" | "column";

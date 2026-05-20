@@ -6,9 +6,14 @@ import {
   compactFormControlClass,
   FormField,
 } from "@/components/taskios/form-field";
+import {
+  DEFAULT_TAG_TONE,
+  TagFormField,
+} from "@/components/taskios/tag-form-field";
 import { useEditTask } from "@/hooks/use-edit-task";
-import type { BoardTask, TaskStatus } from "@/lib/board-types";
+import type { BoardTask, TaskStatus, TaskTag } from "@/lib/board-types";
 import { COLUMN_DEFINITIONS } from "@/lib/board-types";
+import type { TagTone } from "@/lib/tag-tones";
 import { useAppDispatch } from "@/store/hooks";
 import { addTask } from "@/store/slices/tasks-slice";
 
@@ -16,6 +21,9 @@ export type TaskFormValues = {
   title: string;
   subtitle: string;
   status: TaskStatus;
+  hasTag: boolean;
+  tagLabel: string;
+  tagTone: TagTone;
 };
 
 type TaskFormCreateProps = {
@@ -38,6 +46,31 @@ function subtitleToFieldValue(subtitle: string) {
   return subtitle === "Без описания" ? "" : subtitle;
 }
 
+function tagsToFormValues(tags: TaskTag[]): Pick<
+  TaskFormValues,
+  "hasTag" | "tagLabel" | "tagTone"
+> {
+  const firstTag = tags[0];
+  return {
+    hasTag: Boolean(firstTag),
+    tagLabel: firstTag?.label ?? "",
+    tagTone: firstTag?.tone ?? DEFAULT_TAG_TONE,
+  };
+}
+
+function formValuesToTags(values: TaskFormValues): TaskTag[] {
+  if (!values.hasTag) {
+    return [];
+  }
+
+  const label = values.tagLabel.trim();
+  if (!label) {
+    return [];
+  }
+
+  return [{ label, tone: values.tagTone }];
+}
+
 export function TaskForm(props: TaskFormProps) {
   const dispatch = useAppDispatch();
   const { editTask } = useEditTask();
@@ -48,18 +81,28 @@ export function TaskForm(props: TaskFormProps) {
           title: props.task.title,
           subtitle: subtitleToFieldValue(props.task.subtitle),
           status: props.task.status,
+          ...tagsToFormValues(props.task.tags),
         }
       : {
           title: "",
           subtitle: "",
           status: props.defaultStatus,
+          hasTag: false,
+          tagLabel: "",
+          tagTone: DEFAULT_TAG_TONE,
         };
 
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<TaskFormValues>({ defaultValues });
+
+  const hasTag = watch("hasTag");
+  const tagLabel = watch("tagLabel");
+  const tagTone = watch("tagTone");
 
   const registerTitle = () => {
     return register("title", {
@@ -68,13 +111,23 @@ export function TaskForm(props: TaskFormProps) {
     });
   };
 
+  const tagLabelError =
+    hasTag && !tagLabel.trim() ? "Введите название тега" : undefined;
+
   const onSubmit = handleSubmit((values) => {
+    if (hasTag && !values.tagLabel.trim()) {
+      return;
+    }
+
+    const tags = formValuesToTags(values);
+
     if (props.mode === "edit") {
       editTask({
         taskId: props.task.id,
         title: values.title,
         subtitle: values.subtitle,
         status: values.status,
+        tags,
       });
       props.onSaved?.();
       return;
@@ -85,6 +138,7 @@ export function TaskForm(props: TaskFormProps) {
         title: values.title,
         subtitle: values.subtitle,
         status: values.status,
+        tags,
       }),
     );
     props.onCreated?.();
@@ -123,6 +177,16 @@ export function TaskForm(props: TaskFormProps) {
           ))}
         </select>
       </FormField>
+
+      <TagFormField
+        enabled={hasTag}
+        onEnabledChange={(enabled) => setValue("hasTag", enabled)}
+        label={tagLabel}
+        onLabelChange={(label) => setValue("tagLabel", label)}
+        tone={tagTone}
+        onToneChange={(tone) => setValue("tagTone", tone)}
+        labelError={tagLabelError}
+      />
 
       <div className="flex gap-2 pt-1">
         <button

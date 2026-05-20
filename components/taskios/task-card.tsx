@@ -4,15 +4,10 @@ import {
   DeleteActionButton,
   EditActionButton,
 } from "@/components/taskios/card-action-buttons";
-import type { BoardTask, TaskTag } from "@/lib/board-types";
+import type { BoardTask } from "@/lib/board-types";
+import { getTagBadgeClass } from "@/lib/tag-tones";
 import { AVATAR_TONE_CLASSES } from "@/lib/task-avatar";
 import { useDeleteTask } from "@/hooks/use-delete-task";
-
-const tagToneClass: Record<TaskTag["tone"], string> = {
-  pink: "bg-pink-100 text-pink-800 ring-1 ring-pink-200/60",
-  purple: "bg-purple-100 text-purple-800 ring-1 ring-purple-200/60",
-  mint: "bg-teal-100 text-teal-800 ring-1 ring-teal-200/60",
-};
 
 type TaskCardProps = {
   task: BoardTask;
@@ -60,7 +55,7 @@ export function TaskCard({ task, showDelete = true, onEdit }: TaskCardProps) {
             {task.tags.map((tag) => (
               <li key={tag.label}>
                 <span
-                  className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${tagToneClass[tag.tone]}`}
+                  className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${getTagBadgeClass(tag.tone)}`}
                 >
                   {tag.label}
                 </span>

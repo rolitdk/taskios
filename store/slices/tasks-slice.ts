@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-import type { BoardTask, TaskStatus } from "@/lib/board-types";
+import type { BoardTask, TaskStatus, TaskTag } from "@/lib/board-types";
 import { WORK_BOARD_ID } from "@/lib/board-catalog";
 import { buildInitialBoardMetas, buildInitialBoards } from "@/lib/mock-boards";
 import { buildTaskInitials, pickAvatarTone } from "@/lib/task-avatar";
@@ -9,6 +9,7 @@ export type CreateTaskPayload = {
   title: string;
   subtitle: string;
   status: TaskStatus;
+  tags: TaskTag[];
 };
 
 export type UpdateTaskPayload = {
@@ -16,6 +17,7 @@ export type UpdateTaskPayload = {
   title: string;
   subtitle: string;
   status: TaskStatus;
+  tags: TaskTag[];
 };
 
 export type MoveTaskPayload = {
@@ -121,7 +123,7 @@ const tasksSlice = createSlice({
       );
     },
     addTask(state, action: PayloadAction<CreateTaskPayload>) {
-      const { title, subtitle, status } = action.payload;
+      const { title, subtitle, status, tags } = action.payload;
       const tasks = getActiveTasks(state);
       const columnTasks = tasks.filter((task) => task.status === status);
       const nextOrder = columnTasks.length;
@@ -132,7 +134,7 @@ const tasksSlice = createSlice({
         subtitle: subtitle.trim() || "Без описания",
         initials: buildTaskInitials(title),
         avatarTone: pickAvatarTone(tasks.length),
-        tags: [],
+        tags,
         status,
         order: nextOrder,
       };
@@ -140,7 +142,7 @@ const tasksSlice = createSlice({
       setActiveTasks(state, [...tasks, newTask]);
     },
     updateTask(state, action: PayloadAction<UpdateTaskPayload>) {
-      const { taskId, title, subtitle, status } = action.payload;
+      const { taskId, title, subtitle, status, tags } = action.payload;
       const tasks = getActiveTasks(state);
       const task = tasks.find((item) => item.id === taskId);
       if (!task) {
@@ -153,6 +155,7 @@ const tasksSlice = createSlice({
         title: trimmedTitle,
         subtitle: trimmedSubtitle,
         initials: buildTaskInitials(trimmedTitle),
+        tags,
       };
 
       if (task.status === status) {
