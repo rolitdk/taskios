@@ -17,6 +17,7 @@ export function AppShellUserMenu() {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       setUser(null);
+      router.replace("/");
       router.refresh();
     } finally {
       setIsLoggingOut(false);

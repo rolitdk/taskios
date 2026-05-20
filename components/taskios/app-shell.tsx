@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AppShellCreateBoardButton } from "@/components/taskios/app-shell-create-board-button";
 import { AppShellFooter } from "@/components/taskios/app-shell-footer";
 import { AppShellSearchSlot } from "@/components/taskios/app-shell-search-slot";
 import { AppShellUserMenu } from "@/components/taskios/app-shell-user-menu";
@@ -29,13 +30,7 @@ export function AppShell({ children }: AppShellProps) {
           <AppShellSearchSlot />
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
-            <button
-              type="button"
-              className="bg-accent text-foreground hover:bg-accent-strong flex h-10 w-10 items-center justify-center rounded-2xl text-xl font-light text-white shadow-sm transition-colors"
-              aria-label="Создать"
-            >
-              +
-            </button>
+            <AppShellCreateBoardButton />
             <button
               type="button"
               className="text-muted hover:bg-surface hover:text-foreground hidden h-10 w-10 items-center justify-center rounded-2xl sm:flex"

@@ -100,6 +100,16 @@ const tasksSlice = createSlice({
       }
       meta.title = title.trim();
     },
+    addBoard(state, action: PayloadAction<{ title: string }>) {
+      const title = action.payload.title.trim();
+      if (title.length < 2) {
+        return;
+      }
+
+      const id = `board-${crypto.randomUUID()}`;
+      state.boardMetas.push({ id, title });
+      state.boards[id] = [];
+    },
     removeBoard(state, action: PayloadAction<string>) {
       const boardId = action.payload;
       const exists = state.boardMetas.some((board) => board.id === boardId);
@@ -212,6 +222,7 @@ const tasksSlice = createSlice({
 
 export const {
   setActiveBoard,
+  addBoard,
   updateBoardTitle,
   removeBoard,
   moveTask,

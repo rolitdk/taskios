@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+import { BOARDS_CREATE_QUERY } from "@/components/taskios/app-shell-create-board-button";
 import { BoardTitleForm } from "@/components/taskios/board-title-form";
+import { CreateBoardForm } from "@/components/taskios/create-board-form";
 import {
   DeleteActionButton,
   EditActionButton,
@@ -25,11 +28,20 @@ type DeleteBoardState = {
 };
 
 export function BoardsList() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const boards = useAppSelector(selectAllBoardMetas);
   const { deleteBoard } = useDeleteBoard();
+  const createOpen = searchParams.get(BOARDS_CREATE_QUERY) === "1";
   const [editBoard, setEditBoard] = useState<EditBoardState | null>(null);
   const [deleteBoardState, setDeleteBoardState] =
     useState<DeleteBoardState | null>(null);
+
+  const closeCreateModal = () => {
+    if (createOpen) {
+      router.replace("/boards");
+    }
+  };
 
   const closeEditModal = () => setEditBoard(null);
   const closeDeleteModal = () => setDeleteBoardState(null);
@@ -94,6 +106,17 @@ export function BoardsList() {
           </li>
         ))}
       </ul>
+
+      <TaskModal
+        open={createOpen}
+        onClose={closeCreateModal}
+        title="Новая доска"
+      >
+        <CreateBoardForm
+          onCancel={closeCreateModal}
+          onCreated={closeCreateModal}
+        />
+      </TaskModal>
 
       <TaskModal
         open={editBoard !== null}

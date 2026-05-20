@@ -11,6 +11,7 @@ const publicApiRoutes = new Set([
   "/api/auth/login",
   "/api/auth/register",
   "/api/auth/refresh",
+  "/api/auth/logout",
 ]);
 
 async function isAuthenticated(request: NextRequest): Promise<boolean> {
