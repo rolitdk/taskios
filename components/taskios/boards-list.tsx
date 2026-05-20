@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+import { useAuth } from "@/components/providers/auth-provider";
 import { BOARDS_CREATE_QUERY } from "@/components/taskios/app-shell-create-board-button";
 import { BoardTitleForm } from "@/components/taskios/board-title-form";
 import { CreateBoardForm } from "@/components/taskios/create-board-form";
@@ -30,6 +31,7 @@ type DeleteBoardState = {
 export function BoardsList() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, isLoading } = useAuth();
   const boards = useAppSelector(selectAllBoardMetas);
   const { deleteBoard } = useDeleteBoard();
   const createOpen = searchParams.get(BOARDS_CREATE_QUERY) === "1";
@@ -61,6 +63,19 @@ export function BoardsList() {
 
   const openDelete = (board: BoardCatalogMeta) => {
     setDeleteBoardState({ boardId: board.id, title: board.title });
+  };
+
+  const openCreate = () => {
+    if (isLoading) {
+      return;
+    }
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    router.push(`/boards?${BOARDS_CREATE_QUERY}=1`);
   };
 
   return (
@@ -105,6 +120,26 @@ export function BoardsList() {
             </article>
           </li>
         ))}
+        <li className="shrink-0">
+          <button
+            type="button"
+            onClick={openCreate}
+            disabled={isLoading}
+            className="bg-column-bg hover:ring-accent-strong/60 border-accent-soft/80 text-muted hover:text-foreground flex w-80 flex-col rounded-2xl border-2 border-dashed p-3 ring-1 ring-purple-200/40 transition-shadow hover:bg-white/40 hover:shadow-md focus-visible:ring-2 focus-visible:ring-accent-strong/60 focus-visible:outline-none disabled:opacity-60"
+            aria-label="Создать новую доску"
+          >
+            <span className="mb-3 block min-h-5" aria-hidden />
+            <span className="border-accent-soft/80 mt-auto flex min-h-16 w-full flex-col items-center justify-center gap-1 rounded-xl border border-dashed bg-white/40 px-3 py-2 transition-colors">
+              <span
+                className="text-accent-strong text-2xl leading-none font-light"
+                aria-hidden
+              >
+                +
+              </span>
+              <span className="text-sm font-medium">Создать новую доску</span>
+            </span>
+          </button>
+        </li>
       </ul>
 
       <TaskModal
