@@ -5,18 +5,23 @@ export function isAuthPagePath(pathname: string): boolean {
   return (AUTH_PAGE_PATHS as readonly string[]).includes(pathname);
 }
 
+/** Маркетинговая главная — доступна без сессии. */
+export function isLandingPagePath(pathname: string): boolean {
+  return pathname === "/";
+}
+
 /**
  * Канбан с мок-данными в Redux — пока доступен без авторизации.
  * Уберите из публичных путей, когда будет готов вход.
  */
 export function isMockDataPagePath(pathname: string): boolean {
-  if (pathname === "/") {
-    return true;
-  }
-
   return pathname === "/boards" || pathname.startsWith("/boards/");
 }
 
 export function isPublicPagePath(pathname: string): boolean {
-  return isAuthPagePath(pathname) || isMockDataPagePath(pathname);
+  return (
+    isLandingPagePath(pathname) ||
+    isAuthPagePath(pathname) ||
+    isMockDataPagePath(pathname)
+  );
 }

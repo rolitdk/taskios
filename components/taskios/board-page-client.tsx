@@ -21,7 +21,7 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
 
   useEffect(() => {
     if (!board) {
-      router.replace("/");
+      router.replace("/boards");
     }
   }, [board, router]);
 
@@ -34,7 +34,7 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <Link
-            href="/"
+            href="/boards"
             className="text-accent-strong hover:text-foreground mb-2 inline-flex items-center gap-1 text-sm font-medium transition-colors"
           >
             <span aria-hidden>←</span>К моим доскам

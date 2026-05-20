@@ -76,7 +76,7 @@ export function RegisterForm() {
     if (response.ok) {
       const data = (await response.json()) as { user: PublicUser };
       setUser(data.user);
-      router.replace("/");
+      router.replace("/boards");
       router.refresh();
       return;
     }

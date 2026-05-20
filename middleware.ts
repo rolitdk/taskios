@@ -52,7 +52,7 @@ function handlePageRoute(
   const { pathname } = request.nextUrl;
 
   if (authenticated && isAuthPagePath(pathname)) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/boards", request.url));
   }
 
   if (!authenticated && !isPublicPagePath(pathname)) {
