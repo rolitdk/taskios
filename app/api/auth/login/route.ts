@@ -5,14 +5,23 @@ import {
   verifyPassword,
 } from "@/lib/server/auth";
 import { db } from "@/lib/server/db";
-import { apiError, ok } from "@/lib/server/http";
+import {
+  apiError,
+  handleAuthRouteError,
+  ok,
+  parseRequestJson,
+} from "@/lib/server/http";
 import { toPublicUser } from "@/lib/server/serializers";
 import { formatZodErrorMessage, loginSchema } from "@/lib/server/validation";
 
 export async function POST(request: Request): Promise<Response> {
   try {
-    const body = await request.json();
-    const parsed = loginSchema.safeParse(body);
+    const json = await parseRequestJson(request);
+    if (!json.ok) {
+      return json.response;
+    }
+
+    const parsed = loginSchema.safeParse(json.data);
     if (!parsed.success) {
       return apiError(
         400,
@@ -49,10 +58,6 @@ export async function POST(request: Request): Promise<Response> {
     setAuthCookies(response, tokenPair);
     return response;
   } catch (error) {
-    if (error instanceof SyntaxError) {
-      return apiError(400, "INVALID_JSON", "Некорректный JSON");
-    }
-
-    return apiError(500, "INTERNAL_ERROR", "Внутренняя ошибка сервера");
+    return handleAuthRouteError(error);
   }
 }

@@ -1,3 +1,10 @@
+export type ApiErrorBody = {
+  error: {
+    code: string;
+    message: string;
+  };
+};
+
 /** Публичные поля пользователя (без хешей). */
 export type PublicUser = {
   id: string;

@@ -7,19 +7,13 @@ import { useForm } from "react-hook-form";
 
 import { FormField } from "@/components/taskios/form-field";
 import { useAuth } from "@/components/providers/auth-provider";
-import type { PublicUser } from "@/lib/auth-types";
+import { getApiErrorMessage, readResponseJson } from "@/lib/api-client";
 import { getPostLoginRedirectPath } from "@/lib/auth-routes";
+import type { ApiErrorBody, PublicUser } from "@/lib/auth-types";
 
 type LoginFormValues = {
   email: string;
   password: string;
-};
-
-type ApiErrorBody = {
-  error: {
-    code: string;
-    message: string;
-  };
 };
 
 const inputClassName =
@@ -45,34 +39,33 @@ export function LoginForm() {
   const onSubmit = handleSubmit(async (values) => {
     setServerError(null);
 
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: values.email,
-        password: values.password,
-      }),
-    });
+    const fallbackMessage = "Не удалось войти. Проверьте email и пароль.";
 
-    if (response.ok) {
-      const data = (await response.json()) as { user: PublicUser };
-      setUser(data.user);
-      router.replace(getPostLoginRedirectPath(searchParams.get("from")));
-      router.refresh();
-      return;
-    }
-
-    let message = "Не удалось войти. Проверьте email и пароль.";
     try {
-      const body = (await response.json()) as ApiErrorBody;
-      if (body.error?.message) {
-        message = body.error.message;
-      }
-    } catch {
-      // оставляем сообщение по умолчанию
-    }
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+        }),
+      });
 
-    setServerError(message);
+      const body = await readResponseJson<{ user: PublicUser } | ApiErrorBody>(
+        response,
+      );
+
+      if (response.ok && body && "user" in body) {
+        setUser(body.user);
+        router.replace(getPostLoginRedirectPath(searchParams.get("from")));
+        router.refresh();
+        return;
+      }
+
+      setServerError(getApiErrorMessage(body, fallbackMessage));
+    } catch {
+      setServerError(fallbackMessage);
+    }
   });
 
   return (

@@ -7,20 +7,14 @@ import { useForm } from "react-hook-form";
 
 import { FormField } from "@/components/taskios/form-field";
 import { useAuth } from "@/components/providers/auth-provider";
-import type { PublicUser } from "@/lib/auth-types";
+import { getApiErrorMessage, readResponseJson } from "@/lib/api-client";
+import type { ApiErrorBody, PublicUser } from "@/lib/auth-types";
 
 type RegisterFormValues = {
   name: string;
   email: string;
   password: string;
   confirmPassword: string;
-};
-
-type ApiErrorBody = {
-  error: {
-    code: string;
-    message: string;
-  };
 };
 
 const PASSWORD_MIN_LENGTH = 8;
@@ -63,35 +57,34 @@ export function RegisterForm() {
   const onSubmit = handleSubmit(async (values) => {
     setServerError(null);
 
-    const response = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: values.name,
-        email: values.email,
-        password: values.password,
-      }),
-    });
+    const fallbackMessage = "Не удалось создать аккаунт. Попробуйте позже.";
 
-    if (response.ok) {
-      const data = (await response.json()) as { user: PublicUser };
-      setUser(data.user);
-      router.replace("/boards");
-      router.refresh();
-      return;
-    }
-
-    let message = "Не удалось создать аккаунт. Попробуйте позже.";
     try {
-      const body = (await response.json()) as ApiErrorBody;
-      if (body.error?.message) {
-        message = body.error.message;
-      }
-    } catch {
-      // оставляем сообщение по умолчанию
-    }
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          password: values.password,
+        }),
+      });
 
-    setServerError(message);
+      const body = await readResponseJson<{ user: PublicUser } | ApiErrorBody>(
+        response,
+      );
+
+      if (response.ok && body && "user" in body) {
+        setUser(body.user);
+        router.replace("/boards");
+        router.refresh();
+        return;
+      }
+
+      setServerError(getApiErrorMessage(body, fallbackMessage));
+    } catch {
+      setServerError(fallbackMessage);
+    }
   });
 
 

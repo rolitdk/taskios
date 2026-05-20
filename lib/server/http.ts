@@ -34,3 +34,31 @@ export function apiError(
     { status },
   );
 }
+
+export async function parseRequestJson(
+  request: Request,
+): Promise<
+  { ok: true; data: unknown } | { ok: false; response: NextResponse<ErrorBody> }
+> {
+  try {
+    return { ok: true, data: await request.json() };
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      return {
+        ok: false,
+        response: apiError(400, "INVALID_JSON", "Некорректный JSON"),
+      };
+    }
+    throw error;
+  }
+}
+
+export function handleAuthRouteError(error: unknown): NextResponse<ErrorBody> {
+  const message =
+    error instanceof Error ? error.message : "Внутренняя ошибка сервера";
+  if (message.includes("JWT_")) {
+    return apiError(500, "CONFIG_ERROR", "Не настроены JWT секреты");
+  }
+
+  return apiError(500, "INTERNAL_ERROR", "Внутренняя ошибка сервера");
+}

@@ -4,14 +4,23 @@ import {
   setAuthCookies,
 } from "@/lib/server/auth";
 import { db } from "@/lib/server/db";
-import { apiError, created } from "@/lib/server/http";
+import {
+  apiError,
+  created,
+  handleAuthRouteError,
+  parseRequestJson,
+} from "@/lib/server/http";
 import { toPublicUser } from "@/lib/server/serializers";
 import { formatZodErrorMessage, registerSchema } from "@/lib/server/validation";
 
 export async function POST(request: Request): Promise<Response> {
   try {
-    const body = await request.json();
-    const parsed = registerSchema.safeParse(body);
+    const json = await parseRequestJson(request);
+    if (!json.ok) {
+      return json.response;
+    }
+
+    const parsed = registerSchema.safeParse(json.data);
     if (!parsed.success) {
       return apiError(
         400,
@@ -52,16 +61,6 @@ export async function POST(request: Request): Promise<Response> {
     setAuthCookies(response, tokenPair);
     return response;
   } catch (error) {
-    if (error instanceof SyntaxError) {
-      return apiError(400, "INVALID_JSON", "Некорректный JSON");
-    }
-
-    const message =
-      error instanceof Error ? error.message : "Внутренняя ошибка сервера";
-    if (message.includes("JWT_")) {
-      return apiError(500, "CONFIG_ERROR", "Не настроены JWT секреты");
-    }
-
-    return apiError(500, "INTERNAL_ERROR", "Внутренняя ошибка сервера");
+    return handleAuthRouteError(error);
   }
 }
