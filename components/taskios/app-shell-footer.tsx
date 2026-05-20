@@ -29,7 +29,7 @@ export function AppShellFooter() {
   const { user } = useAuth();
   const year = new Date().getFullYear();
   const productLinks = [
-    { label: "Доски", href: user ? "/boards" : "/register" },
+    { label: "Доски", href: user ? "/boards" : "/login" },
     ...FOOTER_LINKS.product,
   ];
 
