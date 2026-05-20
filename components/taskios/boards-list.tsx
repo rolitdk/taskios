@@ -89,12 +89,12 @@ export function BoardsList() {
         </h1>
       </header>
       <ul
-        className="flex [scrollbar-width:thin] gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none]"
+        className="flex flex-wrap gap-4"
         role="list"
         aria-label="Список досок"
       >
         {boards.map((board) => (
-          <li key={board.id} className="shrink-0">
+          <li key={board.id}>
             <article className="bg-column-bg hover:ring-accent-strong/60 flex w-80 flex-col rounded-2xl p-3 ring-1 ring-purple-200/40 transition-shadow hover:shadow-md">
               <div className="relative mb-3 pr-12">
                 <div className="absolute top-0 right-0 flex items-center gap-0.5">
@@ -120,7 +120,7 @@ export function BoardsList() {
             </article>
           </li>
         ))}
-        <li className="shrink-0">
+        <li>
           <button
             type="button"
             onClick={openCreate}

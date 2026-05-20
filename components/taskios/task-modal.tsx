@@ -47,7 +47,8 @@ export function TaskModal({ open, onClose, title, children }: TaskModalProps) {
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6">
+      <div className="flex min-h-full items-center justify-center">
       <button
         type="button"
         className="absolute inset-0 bg-purple-950/15 backdrop-blur-md backdrop-saturate-150"
@@ -73,6 +74,7 @@ export function TaskModal({ open, onClose, title, children }: TaskModalProps) {
           {title}
         </h2>
         {children}
+      </div>
       </div>
     </div>,
     document.body,
