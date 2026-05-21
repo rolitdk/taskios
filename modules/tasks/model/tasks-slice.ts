@@ -1,8 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type { BoardTask, TaskStatus, TaskTag } from "@/modules/board/model/board-types";
-import { WORK_BOARD_ID } from "@/modules/board/model/board-catalog";
-import { buildInitialBoardMetas, buildInitialBoards } from "@/mockdate/mock-boards";
 import { buildTaskInitials, pickAvatarTone } from "@/modules/tasks/lib/task-avatar";
 
 export type CreateTaskPayload = {
@@ -38,9 +36,9 @@ type TasksState = {
 };
 
 const initialState: TasksState = {
-  activeBoardId: WORK_BOARD_ID,
-  boardMetas: buildInitialBoardMetas(),
-  boards: buildInitialBoards(),
+  activeBoardId: "",
+  boardMetas: [],
+  boards: {},
 };
 
 function reorderTasks(
@@ -85,8 +83,21 @@ const tasksSlice = createSlice({
   initialState,
   reducers: {
     setActiveBoard(state, action: PayloadAction<string>) {
-      if (state.boards[action.payload]) {
+      if (state.boardMetas.some((board) => board.id === action.payload)) {
         state.activeBoardId = action.payload;
+      }
+    },
+    setBoardCatalog(state, action: PayloadAction<BoardMeta[]>) {
+      state.boardMetas = action.payload;
+      state.boards = Object.fromEntries(
+        action.payload.map((meta) => [meta.id, state.boards[meta.id] ?? []]),
+      );
+
+      if (
+        state.activeBoardId &&
+        !action.payload.some((board) => board.id === state.activeBoardId)
+      ) {
+        state.activeBoardId = action.payload[0]?.id ?? "";
       }
     },
     updateBoardTitle(
@@ -100,14 +111,18 @@ const tasksSlice = createSlice({
       }
       meta.title = title.trim();
     },
-    addBoard(state, action: PayloadAction<{ title: string }>) {
-      const title = action.payload.title.trim();
-      if (title.length < 2) {
+    addBoard(state, action: PayloadAction<BoardMeta>) {
+      const { id, title } = action.payload;
+      const trimmedTitle = title.trim();
+      if (trimmedTitle.length < 2) {
         return;
       }
 
-      const id = `board-${crypto.randomUUID()}`;
-      state.boardMetas.push({ id, title });
+      if (state.boardMetas.some((board) => board.id === id)) {
+        return;
+      }
+
+      state.boardMetas.push({ id, title: trimmedTitle });
       state.boards[id] = [];
     },
     removeBoard(state, action: PayloadAction<string>) {
@@ -222,6 +237,7 @@ const tasksSlice = createSlice({
 
 export const {
   setActiveBoard,
+  setBoardCatalog,
   addBoard,
   updateBoardTitle,
   removeBoard,

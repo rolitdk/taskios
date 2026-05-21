@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { useAuth } from "@/modules/user/providers/auth-provider";
-import { BOARDS_CREATE_QUERY } from "@/components/ui/app-shell-create-board-button";
 import { BoardTitleForm } from "@/modules/board/ui/board-title-form";
 import { CreateBoardForm } from "@/modules/board/ui/create-board-form";
 import {
@@ -15,6 +14,7 @@ import {
 import { TaskModal } from "@/modules/tasks/ui/task-modal";
 import type { BoardCatalogMeta } from "@/modules/board/model/board-catalog";
 import { useDeleteBoard } from "@/modules/board/hooks/use-delete-board";
+import { useLoadBoards } from "@/modules/board/hooks/use-load-boards";
 import { useAppSelector } from "@/store/hooks";
 import { selectAllBoardMetas } from "@/modules/board/store/board-selectors";
 
@@ -28,11 +28,14 @@ type DeleteBoardState = {
   title: string;
 };
 
+const BOARDS_CREATE_QUERY = "create";
+
 export function BoardsList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoading } = useAuth();
   const boards = useAppSelector(selectAllBoardMetas);
+  const { isLoading: isBoardsLoading, error: boardsLoadError } = useLoadBoards();
   const { deleteBoard } = useDeleteBoard();
   const createOpen = searchParams.get(BOARDS_CREATE_QUERY) === "1";
   const [editBoard, setEditBoard] = useState<EditBoardState | null>(null);
@@ -87,7 +90,15 @@ export function BoardsList() {
         <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
           Мои доски
         </h1>
+        {boardsLoadError ? (
+          <p className="mt-2 text-sm text-red-600" role="alert">
+            {boardsLoadError}
+          </p>
+        ) : null}
       </header>
+      {isBoardsLoading ? (
+        <p className="text-muted text-sm">Загрузка досок…</p>
+      ) : null}
       <ul
         className="flex flex-wrap gap-4"
         role="list"

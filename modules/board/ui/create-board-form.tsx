@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import {
@@ -18,19 +19,25 @@ type CreateBoardFormProps = {
 };
 
 export function CreateBoardForm({ onCancel, onCreated }: CreateBoardFormProps) {
-  const { createBoard } = useCreateBoard();
+  const { createBoard, isCreating, error, clearError } = useCreateBoard();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<CreateBoardFormValues>({
     defaultValues: { title: "" },
   });
 
-  const onSubmit = handleSubmit((values) => {
-    createBoard(values.title);
-    onCreated?.();
+  useEffect(() => {
+    return () => clearError();
+  }, [clearError]);
+
+  const onSubmit = handleSubmit(async (values) => {
+    const created = await createBoard(values.title);
+    if (created) {
+      onCreated?.();
+    }
   });
 
   return (
@@ -38,6 +45,12 @@ export function CreateBoardForm({ onCancel, onCreated }: CreateBoardFormProps) {
       onSubmit={onSubmit}
       className="bg-surface space-y-3 rounded-2xl p-3 shadow-sm ring-1 ring-black/5"
     >
+      {error ? (
+        <p className="text-sm text-red-600" role="alert">
+          {error}
+        </p>
+      ) : null}
+
       <FormField label="Название" error={errors.title?.message}>
         <input
           {...register("title", {
@@ -53,7 +66,7 @@ export function CreateBoardForm({ onCancel, onCreated }: CreateBoardFormProps) {
       <div className="flex gap-2 pt-1">
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isCreating}
           className="bg-accent hover:bg-accent-strong flex-1 rounded-xl px-3 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60"
         >
           Создать

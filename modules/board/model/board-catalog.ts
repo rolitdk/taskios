@@ -1,7 +1,4 @@
 import type { BoardTask } from "@/modules/board/model/board-types";
-import { MOCK_BOARDS } from "@/mockdate/mock-boards";
-
-export const WORK_BOARD_ID = "work";
 
 export type BoardCatalogMeta = {
   id: string;
@@ -27,16 +24,6 @@ export function boardHrefWithHighlightTask(
   taskId: string,
 ): string {
   return `${boardHref(boardId)}?${BOARD_HIGHLIGHT_TASK_QUERY}=${encodeURIComponent(taskId)}`;
-}
-
-export const ALL_BOARD_METAS: BoardCatalogMeta[] = MOCK_BOARDS.map((board) => ({
-  id: board.id,
-  title: board.title,
-  href: boardHref(board.id),
-}));
-
-export function getBoardMeta(boardId: string): BoardCatalogMeta | undefined {
-  return ALL_BOARD_METAS.find((board) => board.id === boardId);
 }
 
 export function toSearchableEntries(

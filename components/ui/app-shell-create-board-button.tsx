@@ -4,8 +4,6 @@ import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/modules/user/providers/auth-provider";
 
-export const BOARDS_CREATE_QUERY = "create";
-
 export function AppShellCreateBoardButton() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
@@ -20,7 +18,7 @@ export function AppShellCreateBoardButton() {
       return;
     }
 
-    router.push(`/boards?${BOARDS_CREATE_QUERY}=1`);
+    router.push("/boards");
   };
 
   return (

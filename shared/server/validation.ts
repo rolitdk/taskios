@@ -27,6 +27,10 @@ export const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+export const createBoardSchema = z.object({
+  title: z.string().trim().min(2).max(180),
+});
+
 export const createProjectSchema = z.object({
   clientId: z.string().trim().min(1).max(120),
   title: z.string().trim().min(1).max(180),
