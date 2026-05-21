@@ -65,7 +65,7 @@ function handlePageRoute(
   return NextResponse.next();
 }
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const authenticated = await isAuthenticated(request);
 
   if (request.nextUrl.pathname.startsWith("/api")) {
