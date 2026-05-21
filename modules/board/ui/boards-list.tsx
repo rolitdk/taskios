@@ -15,6 +15,7 @@ import { TaskModal } from "@/modules/tasks/ui/task-modal";
 import type { BoardCatalogMeta } from "@/modules/board/model/board-catalog";
 import { useDeleteBoard } from "@/modules/board/hooks/use-delete-board";
 import { useLoadBoards } from "@/modules/board/hooks/use-load-boards";
+import { useLoadTasks } from "@/modules/tasks/hooks/use-load-tasks";
 import { useAppSelector } from "@/store/hooks";
 import { selectAllBoardMetas } from "@/modules/board/store/board-selectors";
 
@@ -35,7 +36,9 @@ export function BoardsList() {
   const searchParams = useSearchParams();
   const { user, isLoading } = useAuth();
   const boards = useAppSelector(selectAllBoardMetas);
-  const { isLoading: isBoardsLoading, error: boardsLoadError } = useLoadBoards();
+  const { isLoading: isBoardsLoading, isReady: isBoardsReady, error: boardsLoadError } =
+    useLoadBoards();
+  const { error: tasksLoadError } = useLoadTasks({ enabled: isBoardsReady });
   const { deleteBoard, isDeleting, error: deleteError, clearError } =
     useDeleteBoard();
   const createOpen = searchParams.get(BOARDS_CREATE_QUERY) === "1";
@@ -102,9 +105,9 @@ export function BoardsList() {
         <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
           Мои доски
         </h1>
-        {boardsLoadError ? (
+        {boardsLoadError || tasksLoadError ? (
           <p className="mt-2 text-sm text-red-600" role="alert">
-            {boardsLoadError}
+            {boardsLoadError ?? tasksLoadError}
           </p>
         ) : null}
       </header>

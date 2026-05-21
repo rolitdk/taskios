@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { BoardView } from "@/modules/board/ui/board-view";
 import { useActiveBoard } from "@/modules/board/hooks/use-active-board";
 import { useLoadBoards } from "@/modules/board/hooks/use-load-boards";
+import { useLoadTasks } from "@/modules/tasks/hooks/use-load-tasks";
 import { BOARD_HIGHLIGHT_TASK_QUERY } from "@/modules/board/model/board-catalog";
 import { useAppSelector } from "@/store/hooks";
 import { selectBoardMetaById } from "@/modules/board/store/board-selectors";
@@ -24,6 +25,9 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
   const highlightedTaskId = searchParams.get(BOARD_HIGHLIGHT_TASK_QUERY);
   useActiveBoard(boardId);
   const { isLoading: isBoardsLoading, isReady: isBoardsReady } = useLoadBoards();
+  const { isLoading: isTasksLoading, error: tasksLoadError } = useLoadTasks({
+    enabled: isBoardsReady,
+  });
 
   const board = useAppSelector((state) => selectBoardMetaById(state, boardId));
 
@@ -51,10 +55,14 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
     }
   }, [board, isBoardsReady, router]);
 
-  if (isBoardsLoading || !board) {
+  const isPageLoading = isBoardsLoading || isTasksLoading || !board;
+
+  if (isPageLoading) {
     return (
       <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-4 py-6 sm:px-6">
-        <p className="text-muted text-sm">Загрузка доски…</p>
+        <p className="text-muted text-sm">
+          {isBoardsLoading ? "Загрузка доски…" : "Загрузка задач…"}
+        </p>
       </main>
     );
   }
@@ -76,9 +84,11 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
             {board.title}
           </h1>
         </div>
-        <span className="bg-surface text-muted rounded-full px-3 py-1 text-xs font-medium shadow-sm ring-1 ring-black/5">
-          Локальное состояние · Redux
-        </span>
+        {tasksLoadError ? (
+          <p className="text-sm text-red-600" role="alert">
+            {tasksLoadError}
+          </p>
+        ) : null}
       </div>
 
       <BoardView boardId={boardId} highlightedTaskId={highlightedTaskId} />

@@ -100,6 +100,14 @@ const tasksSlice = createSlice({
         state.activeBoardId = action.payload[0]?.id ?? "";
       }
     },
+    setAllBoardTasks(
+      state,
+      action: PayloadAction<Record<string, BoardTask[]>>,
+    ) {
+      for (const meta of state.boardMetas) {
+        state.boards[meta.id] = action.payload[meta.id] ?? [];
+      }
+    },
     updateBoardTitle(
       state,
       action: PayloadAction<{ boardId: string; title: string }>,
@@ -238,6 +246,7 @@ const tasksSlice = createSlice({
 export const {
   setActiveBoard,
   setBoardCatalog,
+  setAllBoardTasks,
   addBoard,
   updateBoardTitle,
   removeBoard,

@@ -9,6 +9,8 @@ export type AvatarTone = "soft" | "muted" | "shell" | "accent" | "column";
 
 export type TaskStatus = "todo" | "doing" | "review" | "done";
 
+export type TaskPriority = "low" | "medium" | "high" | "urgent";
+
 export type BoardTask = {
   id: string;
   title: string;

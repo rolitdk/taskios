@@ -1,14 +1,52 @@
 import type { TaskStatus } from "@/modules/board/model/board-types";
 import type { ApiErrorBody } from "@/modules/user/model/auth-types";
+import type {
+  TaskDto,
+  TasksListResponse,
+} from "@/modules/tasks/model/task-api-types";
 import { getApiErrorMessage, readResponseJson } from "@/shared/lib/api-client";
 
 const BOARDS_API = "/api/boards";
+const TASKS_API = "/api/tasks";
 
 export class TasksApiError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "TasksApiError";
   }
+}
+
+async function parseTasksResponse<T>(
+  response: Response,
+  fallbackMessage: string,
+): Promise<T> {
+  const body = await readResponseJson<T | ApiErrorBody>(response);
+
+  if (!response.ok) {
+    throw new TasksApiError(getApiErrorMessage(body, fallbackMessage));
+  }
+
+  if (
+    !body ||
+    (typeof body === "object" && body !== null && "error" in body)
+  ) {
+    throw new TasksApiError(fallbackMessage);
+  }
+
+  return body as T;
+}
+
+export async function fetchTasks(boardId?: string): Promise<TaskDto[]> {
+  const query = boardId
+    ? `?projectId=${encodeURIComponent(boardId)}`
+    : "";
+  const response = await fetch(`${TASKS_API}${query}`, { method: "GET" });
+  const body = await parseTasksResponse<TasksListResponse>(
+    response,
+    "Не удалось загрузить задачи",
+  );
+
+  return body.tasks;
 }
 
 export async function clearColumnTasks(
