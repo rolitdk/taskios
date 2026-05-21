@@ -123,6 +123,7 @@ export function BoardView({ boardId, highlightedTaskId }: BoardViewProps) {
         {columns.map((column) => (
           <BoardColumn
             key={column.id}
+            boardId={boardId}
             column={column}
             highlightedTaskId={highlightedTaskId}
             onStartCreate={(status) => setTaskModal({ kind: "create", status })}

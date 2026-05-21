@@ -12,13 +12,13 @@ import type {
   BoardTask,
   TaskStatus,
 } from "@/modules/board/model/board-types";
-import { useAppDispatch } from "@/store/hooks";
-import { clearColumnTasks } from "@/modules/tasks/model/tasks-slice";
+import { useClearColumnTasks } from "@/modules/tasks/hooks/use-clear-column-tasks";
 
 import { TaskModal } from "../../tasks/ui/task-modal";
 import { SortableTaskCard } from "../../tasks/ui/sortable-task-card";
 
 type BoardColumnProps = {
+  boardId: string;
   column: BoardColumnType;
   highlightedTaskId?: string | null;
   onStartCreate: (status: TaskStatus) => void;
@@ -26,12 +26,13 @@ type BoardColumnProps = {
 };
 
 export function BoardColumn({
+  boardId,
   column,
   highlightedTaskId,
   onStartCreate,
   onEditTask,
 }: BoardColumnProps) {
-  const dispatch = useAppDispatch();
+  const { clearColumn, isClearing, error, clearError } = useClearColumnTasks();
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
   const taskIds = column.tasks.map((task) => task.id);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -56,14 +57,20 @@ export function BoardColumn({
 
   const openClearColumnModal = () => {
     setMenuOpen(false);
+    clearError();
     setClearColumnOpen(true);
   };
 
-  const closeClearColumnModal = () => setClearColumnOpen(false);
+  const closeClearColumnModal = () => {
+    clearError();
+    setClearColumnOpen(false);
+  };
 
-  const confirmClearColumn = () => {
-    dispatch(clearColumnTasks(column.id));
-    closeClearColumnModal();
+  const confirmClearColumn = async () => {
+    const cleared = await clearColumn(boardId, column.id);
+    if (cleared) {
+      closeClearColumnModal();
+    }
   };
 
   return (
@@ -147,11 +154,17 @@ export function BoardColumn({
           <p className="text-foreground text-sm leading-relaxed">
             Вы уверены, что хотите удалить все задачи в колонке «{column.title}»?
           </p>
+          {error ? (
+            <p className="text-sm text-red-600" role="alert">
+              {error}
+            </p>
+          ) : null}
           <div className="flex gap-2">
             <button
               type="button"
               onClick={confirmClearColumn}
-              className="bg-accent hover:bg-accent-strong flex-1 rounded-xl px-3 py-2 text-sm font-semibold text-white transition-colors"
+              disabled={isClearing}
+              className="bg-accent hover:bg-accent-strong flex-1 rounded-xl px-3 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60"
             >
               Удалить
             </button>
