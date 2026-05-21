@@ -2,16 +2,16 @@ import {
   createTokenPair,
   hashPassword,
   setAuthCookies,
-} from "@/lib/server/auth";
-import { db } from "@/lib/server/db";
+} from "@/shared/server/auth";
+import { db } from "@/shared/server/db";
 import {
   apiError,
   created,
   handleAuthRouteError,
   parseRequestJson,
-} from "@/lib/server/http";
-import { toPublicUser } from "@/lib/server/serializers";
-import { formatZodErrorMessage, registerSchema } from "@/lib/server/validation";
+} from "@/shared/server/http";
+import { toPublicUser } from "@/shared/server/serializers";
+import { formatZodErrorMessage, registerSchema } from "@/shared/server/validation";
 
 export async function POST(request: Request): Promise<Response> {
   try {

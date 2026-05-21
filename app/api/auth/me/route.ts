@@ -1,7 +1,7 @@
-import { db } from "@/lib/server/db";
-import { apiError, ok } from "@/lib/server/http";
-import { toPublicUser } from "@/lib/server/serializers";
-import { getAuthenticatedUserId } from "@/lib/server/session";
+import { db } from "@/shared/server/db";
+import { apiError, ok } from "@/shared/server/http";
+import { toPublicUser } from "@/shared/server/serializers";
+import { getAuthenticatedUserId } from "@/shared/server/session";
 
 export async function GET(request: Request): Promise<Response> {
   const userId = await getAuthenticatedUserId(request);

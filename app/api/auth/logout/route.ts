@@ -1,7 +1,7 @@
-import { clearAuthCookies } from "@/lib/server/auth";
-import { db } from "@/lib/server/db";
-import { ok } from "@/lib/server/http";
-import { getAuthenticatedUserId } from "@/lib/server/session";
+import { clearAuthCookies } from "@/shared/server/auth";
+import { db } from "@/shared/server/db";
+import { ok } from "@/shared/server/http";
+import { getAuthenticatedUserId } from "@/shared/server/session";
 
 export async function POST(request: Request): Promise<Response> {
   const userId = await getAuthenticatedUserId(request);

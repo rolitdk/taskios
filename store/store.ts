@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-import { tasksReducer } from "@/store/slices/tasks-slice";
+import { tasksReducer } from "@/modules/tasks/model/tasks-slice";
 
 export const makeStore = () =>
   configureStore({

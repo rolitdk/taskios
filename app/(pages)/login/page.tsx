@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 
-import { AppShell } from "@/components/taskios/app-shell";
-import { LoginForm } from "@/components/taskios/login-form";
+import { AppShell } from "@/components/ui/app-shell";
+import { LoginForm } from "@/modules/user/ui/login-form";
 
 export default function LoginPage() {
   return (

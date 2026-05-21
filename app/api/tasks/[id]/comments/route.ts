@@ -1,10 +1,10 @@
-import { db } from "@/lib/server/db";
-import { apiError, created, ok } from "@/lib/server/http";
-import { getAuthenticatedUserId } from "@/lib/server/session";
+import { db } from "@/shared/server/db";
+import { apiError, created, ok } from "@/shared/server/http";
+import { getAuthenticatedUserId } from "@/shared/server/session";
 import {
   createCommentSchema,
   formatZodErrorMessage,
-} from "@/lib/server/validation";
+} from "@/shared/server/validation";
 
 async function ensureTaskAccess(
   taskId: string,

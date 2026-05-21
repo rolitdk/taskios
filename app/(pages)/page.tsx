@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { AppShell } from "@/components/taskios/app-shell";
-import { HomeLanding } from "@/components/taskios/home-landing";
+import { AppShell } from "@/components/ui/app-shell";
+import { HomeLanding } from "@/components/ui/home-landing";
 
 export const metadata: Metadata = {
   title: "Taskios — доски задач для ваших проектов",

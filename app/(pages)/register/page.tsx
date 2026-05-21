@@ -1,5 +1,5 @@
-import { AppShell } from "@/components/taskios/app-shell";
-import { RegisterForm } from "@/components/taskios/register-form";
+import { AppShell } from "@/components/ui/app-shell";
+import { RegisterForm } from "@/modules/user/ui/register-form";
 
 export default function RegisterPage() {
   return (

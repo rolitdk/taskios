@@ -4,8 +4,8 @@ import { NextResponse } from "next/server";
 import {
   isAuthPagePath,
   isPublicPagePath,
-} from "@/lib/auth-routes";
-import { AUTH_COOKIE_NAMES, verifyAccessToken } from "@/lib/server/auth";
+} from "@/modules/user/lib/auth-routes";
+import { AUTH_COOKIE_NAMES, verifyAccessToken } from "@/shared/server/auth";
 
 const publicApiRoutes = new Set([
   "/api/auth/login",

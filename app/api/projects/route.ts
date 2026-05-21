@@ -1,10 +1,10 @@
-import { db } from "@/lib/server/db";
-import { apiError, created, ok } from "@/lib/server/http";
-import { getAuthenticatedUserId } from "@/lib/server/session";
+import { db } from "@/shared/server/db";
+import { apiError, created, ok } from "@/shared/server/http";
+import { getAuthenticatedUserId } from "@/shared/server/session";
 import {
   createProjectSchema,
   formatZodErrorMessage,
-} from "@/lib/server/validation";
+} from "@/shared/server/validation";
 
 export async function GET(request: Request): Promise<Response> {
   const userId = await getAuthenticatedUserId(request);

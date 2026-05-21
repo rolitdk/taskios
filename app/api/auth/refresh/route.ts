@@ -6,9 +6,9 @@ import {
   setAuthCookies,
   verifyPassword,
   verifyRefreshToken,
-} from "@/lib/server/auth";
-import { db } from "@/lib/server/db";
-import { apiError, ok } from "@/lib/server/http";
+} from "@/shared/server/auth";
+import { db } from "@/shared/server/db";
+import { apiError, ok } from "@/shared/server/http";
 
 export async function POST(request: Request): Promise<Response> {
   try {
