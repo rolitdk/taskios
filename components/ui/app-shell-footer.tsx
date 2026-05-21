@@ -6,7 +6,7 @@ import { useAuth } from "@/modules/user/providers/auth-provider";
 
 const FOOTER_LINKS = {
   product: [
-    { label: "Возможности", href: "#" },
+    { label: "Возможности", href: "/#features" },
     { label: "Тарифы", href: "#" },
   ],
   company: [

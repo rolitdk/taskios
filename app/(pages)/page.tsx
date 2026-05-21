@@ -4,9 +4,9 @@ import { AppShell } from "@/components/ui/app-shell";
 import { HomeLanding } from "@/components/ui/home-landing";
 
 export const metadata: Metadata = {
-  title: "Taskios — доски задач для ваших проектов",
+  title: "Taskios — канбан-доски для задач и проектов",
   description:
-    "Канбан-доски с drag & drop: планируйте задачи и проекты в удобном интерфейсе Taskios.",
+    "Спокойный канбан с drag & drop, тегами и несколькими досками — для фриланса и небольших команд.",
 };
 
 export default function HomePage() {
