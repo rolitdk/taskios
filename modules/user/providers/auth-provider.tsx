@@ -30,7 +30,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const response = await fetch("/api/auth/me");
+      let response = await fetch("/api/auth/me");
+
+      if (response.status === 401) {
+        const refreshResponse = await fetch("/api/auth/refresh", {
+          method: "POST",
+        });
+        if (refreshResponse.ok) {
+          response = await fetch("/api/auth/me");
+        }
+      }
+
       if (response.ok) {
         const data = (await response.json()) as { user: PublicUser };
         setUser(data.user);

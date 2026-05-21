@@ -5,7 +5,8 @@ import {
   isAuthPagePath,
   isPublicPagePath,
 } from "@/modules/user/lib/auth-routes";
-import { AUTH_COOKIE_NAMES, verifyAccessToken } from "@/shared/server/auth";
+import { setAuthCookies } from "@/shared/server/auth";
+import { resolveAuthFromRequest } from "@/shared/server/resolve-auth";
 
 const publicApiRoutes = new Set([
   "/api/auth/login",
@@ -14,26 +15,23 @@ const publicApiRoutes = new Set([
   "/api/auth/logout",
 ]);
 
-async function isAuthenticated(request: NextRequest): Promise<boolean> {
-  const token = request.cookies.get(AUTH_COOKIE_NAMES.access)?.value;
-  if (!token) {
-    return false;
+function withRefreshedCookies(
+  response: NextResponse,
+  tokens: { accessToken: string; refreshToken: string } | undefined,
+): NextResponse {
+  if (tokens) {
+    setAuthCookies(response, tokens);
   }
-
-  try {
-    await verifyAccessToken(token);
-    return true;
-  } catch {
-    return false;
-  }
+  return response;
 }
 
 function handleApiRoute(
   request: NextRequest,
   authenticated: boolean,
+  refreshedTokens: { accessToken: string; refreshToken: string } | undefined,
 ): NextResponse {
   if (publicApiRoutes.has(request.nextUrl.pathname)) {
-    return NextResponse.next();
+    return withRefreshedCookies(NextResponse.next(), refreshedTokens);
   }
 
   if (!authenticated) {
@@ -43,17 +41,21 @@ function handleApiRoute(
     );
   }
 
-  return NextResponse.next();
+  return withRefreshedCookies(NextResponse.next(), refreshedTokens);
 }
 
 function handlePageRoute(
   request: NextRequest,
   authenticated: boolean,
+  refreshedTokens: { accessToken: string; refreshToken: string } | undefined,
 ): NextResponse {
   const { pathname } = request.nextUrl;
 
   if (authenticated && isAuthPagePath(pathname)) {
-    return NextResponse.redirect(new URL("/boards", request.url));
+    return withRefreshedCookies(
+      NextResponse.redirect(new URL("/boards", request.url)),
+      refreshedTokens,
+    );
   }
 
   if (!authenticated && !isPublicPagePath(pathname)) {
@@ -62,17 +64,19 @@ function handlePageRoute(
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  return withRefreshedCookies(NextResponse.next(), refreshedTokens);
 }
 
 export async function proxy(request: NextRequest): Promise<NextResponse> {
-  const authenticated = await isAuthenticated(request);
+  const { authenticated, refreshedTokens } = await resolveAuthFromRequest(
+    request,
+  );
 
   if (request.nextUrl.pathname.startsWith("/api")) {
-    return handleApiRoute(request, authenticated);
+    return handleApiRoute(request, authenticated, refreshedTokens);
   }
 
-  return handlePageRoute(request, authenticated);
+  return handlePageRoute(request, authenticated, refreshedTokens);
 }
 
 export const config = {

@@ -6,6 +6,7 @@ import { useEffect } from "react";
 
 import { BoardView } from "@/modules/board/ui/board-view";
 import { useActiveBoard } from "@/modules/board/hooks/use-active-board";
+import { useLoadBoards } from "@/modules/board/hooks/use-load-boards";
 import { BOARD_HIGHLIGHT_TASK_QUERY } from "@/modules/board/model/board-catalog";
 import { useAppSelector } from "@/store/hooks";
 import { selectBoardMetaById } from "@/modules/board/store/board-selectors";
@@ -22,6 +23,7 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
   const searchParams = useSearchParams();
   const highlightedTaskId = searchParams.get(BOARD_HIGHLIGHT_TASK_QUERY);
   useActiveBoard(boardId);
+  const { isLoading: isBoardsLoading, isReady: isBoardsReady } = useLoadBoards();
 
   const board = useAppSelector((state) => selectBoardMetaById(state, boardId));
 
@@ -40,13 +42,21 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
   }, [highlightedTaskId, pathname, router]);
 
   useEffect(() => {
+    if (!isBoardsReady) {
+      return;
+    }
+
     if (!board) {
       router.replace("/boards");
     }
-  }, [board, router]);
+  }, [board, isBoardsReady, router]);
 
-  if (!board) {
-    return null;
+  if (isBoardsLoading || !board) {
+    return (
+      <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-4 py-6 sm:px-6">
+        <p className="text-muted text-sm">Загрузка доски…</p>
+      </main>
+    );
   }
 
   return (

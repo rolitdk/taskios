@@ -1,20 +1,11 @@
-import {
-  getAccessTokenFromRequest,
-  verifyAccessToken,
-} from "@/shared/server/auth";
+import { resolveAuthFromRequest } from "@/shared/server/resolve-auth";
 
 export async function getAuthenticatedUserId(
   request: Request,
 ): Promise<string | null> {
-  const token = getAccessTokenFromRequest(request);
-  if (!token) {
+  const { authenticated, userId } = await resolveAuthFromRequest(request);
+  if (!authenticated || !userId) {
     return null;
   }
-
-  try {
-    const payload = await verifyAccessToken(token);
-    return payload.userId;
-  } catch {
-    return null;
-  }
+  return userId;
 }

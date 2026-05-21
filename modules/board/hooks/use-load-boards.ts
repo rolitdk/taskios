@@ -7,10 +7,12 @@ import { useAuth } from "@/modules/user/providers/auth-provider";
 import { setBoardCatalog } from "@/modules/tasks/model/tasks-slice";
 import { useAppDispatch } from "@/store/hooks";
 
+type FetchPhase = "idle" | "loading" | "done";
+
 export function useLoadBoards() {
   const dispatch = useAppDispatch();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const [phase, setPhase] = useState<FetchPhase>("idle");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -20,15 +22,15 @@ export function useLoadBoards() {
 
     if (!user) {
       dispatch(setBoardCatalog([]));
+      setPhase("done");
       return;
     }
 
     let cancelled = false;
+    setPhase("loading");
+    setError(null);
 
     async function load() {
-      setIsLoading(true);
-      setError(null);
-
       try {
         const boards = await fetchBoards();
         if (!cancelled) {
@@ -44,7 +46,7 @@ export function useLoadBoards() {
         }
       } finally {
         if (!cancelled) {
-          setIsLoading(false);
+          setPhase("done");
         }
       }
     }
@@ -56,5 +58,8 @@ export function useLoadBoards() {
     };
   }, [dispatch, isAuthLoading, user]);
 
-  return { isLoading: isAuthLoading || isLoading, error };
+  const isLoading = isAuthLoading || phase !== "done";
+  const isReady = !isAuthLoading && phase === "done";
+
+  return { isLoading, isReady, error };
 }

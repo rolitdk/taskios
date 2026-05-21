@@ -1,57 +1,20 @@
-import {
-  clearAuthCookies,
-  createTokenPair,
-  getRefreshTokenFromRequest,
-  hashPassword,
-  setAuthCookies,
-  verifyPassword,
-  verifyRefreshToken,
-} from "@/shared/server/auth";
-import { db } from "@/shared/server/db";
+import { clearAuthCookies, setAuthCookies } from "@/shared/server/auth";
 import { apiError, ok } from "@/shared/server/http";
+import { refreshSessionFromRequest } from "@/shared/server/refresh-session";
 
 export async function POST(request: Request): Promise<Response> {
-  try {
-    const refreshToken = getRefreshTokenFromRequest(request);
-    if (!refreshToken) {
-      return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-    }
+  const refreshed = await refreshSessionFromRequest(request);
 
-    const payload = await verifyRefreshToken(refreshToken);
-    const user = await db.user.findUnique({
-      where: { id: payload.userId },
-    });
-
-    if (!user?.refreshTokenHash) {
-      const response = apiError(401, "UNAUTHORIZED", "Сессия недействительна");
-      clearAuthCookies(response);
-      return response;
-    }
-
-    const isStoredTokenValid = await verifyPassword(
-      refreshToken,
-      user.refreshTokenHash,
-    );
-    if (!isStoredTokenValid) {
-      const response = apiError(401, "UNAUTHORIZED", "Сессия недействительна");
-      clearAuthCookies(response);
-      return response;
-    }
-
-    const tokenPair = await createTokenPair(user.id);
-    const refreshTokenHash = await hashPassword(tokenPair.refreshToken);
-
-    await db.user.update({
-      where: { id: user.id },
-      data: { refreshTokenHash },
-    });
-
-    const response = ok({ userId: user.id });
-    setAuthCookies(response, tokenPair);
-    return response;
-  } catch {
+  if (!refreshed) {
     const response = apiError(401, "UNAUTHORIZED", "Сессия недействительна");
     clearAuthCookies(response);
     return response;
   }
+
+  const response = ok({ userId: refreshed.userId });
+  setAuthCookies(response, {
+    accessToken: refreshed.accessToken,
+    refreshToken: refreshed.refreshToken,
+  });
+  return response;
 }
