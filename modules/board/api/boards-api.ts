@@ -3,6 +3,7 @@ import type {
   BoardMetaDto,
   BoardsListResponse,
   CreateBoardResponse,
+  UpdateBoardResponse,
 } from "@/modules/board/model/board-api-types";
 import { getApiErrorMessage, readResponseJson } from "@/shared/lib/api-client";
 
@@ -57,4 +58,36 @@ export async function createBoard(title: string): Promise<BoardMetaDto> {
   );
 
   return body.board;
+}
+
+export async function updateBoard(
+  boardId: string,
+  title: string,
+): Promise<BoardMetaDto> {
+  const response = await fetch(`${BOARDS_API}/${boardId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title }),
+  });
+  const body = await parseBoardsResponse<UpdateBoardResponse>(
+    response,
+    "Не удалось обновить доску",
+  );
+
+  return body.board;
+}
+
+export async function deleteBoard(boardId: string): Promise<void> {
+  const response = await fetch(`${BOARDS_API}/${boardId}`, {
+    method: "DELETE",
+  });
+
+  if (response.status === 204) {
+    return;
+  }
+
+  const body = await readResponseJson<ApiErrorBody>(response);
+  throw new BoardsApiError(
+    getApiErrorMessage(body, "Не удалось удалить доску"),
+  );
 }

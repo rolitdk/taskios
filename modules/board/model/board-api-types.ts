@@ -10,3 +10,7 @@ export type BoardsListResponse = {
 export type CreateBoardResponse = {
   board: BoardMetaDto;
 };
+
+export type UpdateBoardResponse = {
+  board: BoardMetaDto;
+};

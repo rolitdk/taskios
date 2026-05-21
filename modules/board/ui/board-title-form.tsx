@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import {
@@ -25,19 +26,28 @@ export function BoardTitleForm({
   onCancel,
   onSaved,
 }: BoardTitleFormProps) {
-  const { editBoardTitle } = useEditBoardTitle();
+  const { editBoardTitle, isSaving, error, clearError } = useEditBoardTitle();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<BoardTitleFormValues>({
     defaultValues: { title: defaultTitle },
   });
 
-  const onSubmit = handleSubmit((values) => {
-    editBoardTitle({ boardId, title: values.title });
-    onSaved?.();
+  useEffect(() => {
+    return () => clearError();
+  }, [clearError]);
+
+  const onSubmit = handleSubmit(async (values) => {
+    const saved = await editBoardTitle({
+      boardId,
+      title: values.title,
+    });
+    if (saved) {
+      onSaved?.();
+    }
   });
 
   return (
@@ -45,6 +55,12 @@ export function BoardTitleForm({
       onSubmit={onSubmit}
       className="bg-surface space-y-3 rounded-2xl p-3 shadow-sm ring-1 ring-black/5"
     >
+      {error ? (
+        <p className="text-sm text-red-600" role="alert">
+          {error}
+        </p>
+      ) : null}
+
       <FormField label="Название" error={errors.title?.message}>
         <input
           {...register("title", {
@@ -60,7 +76,7 @@ export function BoardTitleForm({
       <div className="flex gap-2 pt-1">
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSaving}
           className="bg-accent hover:bg-accent-strong flex-1 rounded-xl px-3 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60"
         >
           Сохранить

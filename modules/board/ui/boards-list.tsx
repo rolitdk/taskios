@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAuth } from "@/modules/user/providers/auth-provider";
 import { BoardTitleForm } from "@/modules/board/ui/board-title-form";
@@ -36,7 +36,8 @@ export function BoardsList() {
   const { user, isLoading } = useAuth();
   const boards = useAppSelector(selectAllBoardMetas);
   const { isLoading: isBoardsLoading, error: boardsLoadError } = useLoadBoards();
-  const { deleteBoard } = useDeleteBoard();
+  const { deleteBoard, isDeleting, error: deleteError, clearError } =
+    useDeleteBoard();
   const createOpen = searchParams.get(BOARDS_CREATE_QUERY) === "1";
   const [editBoard, setEditBoard] = useState<EditBoardState | null>(null);
   const [deleteBoardState, setDeleteBoardState] =
@@ -49,15 +50,26 @@ export function BoardsList() {
   };
 
   const closeEditModal = () => setEditBoard(null);
-  const closeDeleteModal = () => setDeleteBoardState(null);
+  const closeDeleteModal = () => {
+    clearError();
+    setDeleteBoardState(null);
+  };
 
-  const confirmDelete = () => {
+  useEffect(() => {
+    if (!deleteBoardState) {
+      clearError();
+    }
+  }, [deleteBoardState, clearError]);
+
+  const confirmDelete = async () => {
     if (!deleteBoardState) {
       return;
     }
 
-    deleteBoard(deleteBoardState.boardId);
-    closeDeleteModal();
+    const deleted = await deleteBoard(deleteBoardState.boardId);
+    if (deleted) {
+      closeDeleteModal();
+    }
   };
 
   const openEdit = (board: BoardCatalogMeta) => {
@@ -188,13 +200,19 @@ export function BoardsList() {
         {deleteBoardState ? (
           <div className="bg-surface space-y-4 rounded-2xl p-3 shadow-sm ring-1 ring-black/5">
             <p className="text-foreground text-sm leading-relaxed">
-              Вы уверены, что хотите удалить доску?
+              Вы уверены, что хотите удалить доску «{deleteBoardState.title}»?
             </p>
+            {deleteError ? (
+              <p className="text-sm text-red-600" role="alert">
+                {deleteError}
+              </p>
+            ) : null}
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={confirmDelete}
-                className="bg-accent hover:bg-accent-strong flex-1 rounded-xl px-3 py-2 text-sm font-semibold text-white transition-colors"
+                disabled={isDeleting}
+                className="bg-accent hover:bg-accent-strong flex-1 rounded-xl px-3 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60"
               >
                 Удалить
               </button>
