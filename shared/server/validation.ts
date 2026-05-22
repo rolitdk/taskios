@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { TAG_TONE_VALUES } from "@/shared/model/task-tag";
+
 export const projectStatusValues = [
   "planned",
   "active",
@@ -44,6 +46,13 @@ export const createProjectSchema = z.object({
 
 export const updateProjectSchema = createProjectSchema.partial();
 
+export const taskTagSchema = z.object({
+  label: z.string().trim().min(1).max(40),
+  tone: z.enum(TAG_TONE_VALUES),
+});
+
+export const taskTagsSchema = z.array(taskTagSchema).max(32);
+
 export const createTaskSchema = z.object({
   projectId: z.string().trim().min(1),
   title: z.string().trim().min(1).max(180),
@@ -51,6 +60,7 @@ export const createTaskSchema = z.object({
   status: z.enum(taskStatusValues),
   priority: z.enum(taskPriorityValues),
   dueDate: isoDate,
+  tags: taskTagsSchema.default([]),
 });
 
 export const updateTaskSchema = createTaskSchema

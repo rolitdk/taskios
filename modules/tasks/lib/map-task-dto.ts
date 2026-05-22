@@ -17,7 +17,7 @@ function mapTaskDto(task: TaskDto, order: number, avatarIndex: number): BoardTas
     subtitle,
     initials: buildTaskInitials(title),
     avatarTone: pickAvatarTone(avatarIndex),
-    tags: [],
+    tags: task.tags,
     status: task.status,
     order,
   };
@@ -42,6 +42,15 @@ export function mapTasksToBoardTasks(tasks: TaskDto[]): BoardTask[] {
   }
 
   return result;
+}
+
+export function boardTaskFromCreated(
+  task: TaskDto,
+  existingTasks: BoardTask[],
+): BoardTask {
+  const order = existingTasks.filter((item) => item.status === task.status).length;
+
+  return mapTaskDto(task, order, existingTasks.length);
 }
 
 export function groupTasksByBoardId(

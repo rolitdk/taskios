@@ -1,16 +1,7 @@
-export const TAG_TONES = [
-  "slate",
-  "blue",
-  "red",
-  "amber",
-  "green",
-  "pink",
-  "purple",
-  "mint",
-  "orange",
-] as const;
+import { TAG_TONE_VALUES, type TagTone } from "@/shared/model/task-tag";
 
-export type TagTone = (typeof TAG_TONES)[number];
+export const TAG_TONES = TAG_TONE_VALUES;
+export type { TagTone };
 
 export const DEFAULT_TAG_TONE: TagTone = "purple";
 

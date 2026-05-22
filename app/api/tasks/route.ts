@@ -1,6 +1,8 @@
 import { db } from "@/shared/server/db";
 import { apiError, created, ok } from "@/shared/server/http";
 import { getAuthenticatedUserId } from "@/shared/server/session";
+import { toPublicTask } from "@/shared/server/task-serializer";
+import { normalizeTaskTags, taskTagsToJson } from "@/shared/server/task-tags";
 import {
   createTaskSchema,
   formatZodErrorMessage,
@@ -31,7 +33,7 @@ export async function GET(request: Request): Promise<Response> {
     },
   });
 
-  return ok({ tasks });
+  return ok({ tasks: tasks.map(toPublicTask) });
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -64,11 +66,15 @@ export async function POST(request: Request): Promise<Response> {
       return apiError(404, "PROJECT_NOT_FOUND", "Проект не найден");
     }
 
+    const { tags, ...taskData } = parsed.data;
     const task = await db.task.create({
-      data: parsed.data,
+      data: {
+        ...taskData,
+        tags: taskTagsToJson(normalizeTaskTags(tags)),
+      },
     });
 
-    return created({ task });
+    return created({ task: toPublicTask(task) });
   } catch (error) {
     if (error instanceof SyntaxError) {
       return apiError(400, "INVALID_JSON", "Некорректный JSON");

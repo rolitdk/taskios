@@ -1,8 +1,12 @@
 import type { TaskStatus } from "@/modules/board/model/board-types";
 import type { ApiErrorBody } from "@/modules/user/model/auth-types";
 import type {
+  CreateTaskRequest,
+  CreateTaskResponse,
   TaskDto,
   TasksListResponse,
+  UpdateTaskRequest,
+  UpdateTaskResponse,
 } from "@/modules/tasks/model/task-api-types";
 import { getApiErrorMessage, readResponseJson } from "@/shared/lib/api-client";
 
@@ -34,6 +38,39 @@ async function parseTasksResponse<T>(
   }
 
   return body as T;
+}
+
+export async function createTask(
+  payload: CreateTaskRequest,
+): Promise<TaskDto> {
+  const response = await fetch(TASKS_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const body = await parseTasksResponse<CreateTaskResponse>(
+    response,
+    "Не удалось создать задачу",
+  );
+
+  return body.task;
+}
+
+export async function updateTask(
+  taskId: string,
+  payload: UpdateTaskRequest,
+): Promise<TaskDto> {
+  const response = await fetch(`${TASKS_API}/${taskId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const body = await parseTasksResponse<UpdateTaskResponse>(
+    response,
+    "Не удалось сохранить задачу",
+  );
+
+  return body.task;
 }
 
 export async function fetchTasks(boardId?: string): Promise<TaskDto[]> {

@@ -1,9 +1,7 @@
-import type { TagTone } from "@/modules/tasks/ui/tag-tones";
+import type { TagTone, TaskTagRecord } from "@/shared/model/task-tag";
 
-export type TaskTag = {
-  label: string;
-  tone: TagTone;
-};
+export type TaskTag = TaskTagRecord;
+export type { TagTone };
 
 export type AvatarTone = "soft" | "muted" | "shell" | "accent" | "column";
 

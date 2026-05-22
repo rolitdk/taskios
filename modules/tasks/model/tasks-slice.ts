@@ -4,6 +4,8 @@ import type { BoardTask, TaskStatus, TaskTag } from "@/modules/board/model/board
 import { buildTaskInitials, pickAvatarTone } from "@/modules/tasks/lib/task-avatar";
 
 export type CreateTaskPayload = {
+  boardId?: string;
+  id?: string;
   title: string;
   subtitle: string;
   status: TaskStatus;
@@ -70,12 +72,24 @@ function reorderTasks(
     );
 }
 
+function getBoardTasks(state: TasksState, boardId: string): BoardTask[] {
+  return state.boards[boardId] ?? [];
+}
+
+function setBoardTasks(
+  state: TasksState,
+  boardId: string,
+  tasks: BoardTask[],
+) {
+  state.boards[boardId] = tasks;
+}
+
 function getActiveTasks(state: TasksState): BoardTask[] {
-  return state.boards[state.activeBoardId] ?? [];
+  return getBoardTasks(state, state.activeBoardId);
 }
 
 function setActiveTasks(state: TasksState, tasks: BoardTask[]) {
-  state.boards[state.activeBoardId] = tasks;
+  setBoardTasks(state, state.activeBoardId, tasks);
 }
 
 const tasksSlice = createSlice({
@@ -156,13 +170,18 @@ const tasksSlice = createSlice({
       );
     },
     addTask(state, action: PayloadAction<CreateTaskPayload>) {
-      const { title, subtitle, status, tags } = action.payload;
-      const tasks = getActiveTasks(state);
+      const { boardId, id, title, subtitle, status, tags } = action.payload;
+      const targetBoardId = boardId ?? state.activeBoardId;
+      if (!targetBoardId) {
+        return;
+      }
+
+      const tasks = getBoardTasks(state, targetBoardId);
       const columnTasks = tasks.filter((task) => task.status === status);
       const nextOrder = columnTasks.length;
 
       const newTask: BoardTask = {
-        id: `t-${crypto.randomUUID()}`,
+        id: id ?? `t-${crypto.randomUUID()}`,
         title: title.trim(),
         subtitle: subtitle.trim() || "Без описания",
         initials: buildTaskInitials(title),
@@ -172,7 +191,7 @@ const tasksSlice = createSlice({
         order: nextOrder,
       };
 
-      setActiveTasks(state, [...tasks, newTask]);
+      setBoardTasks(state, targetBoardId, [...tasks, newTask]);
     },
     updateTask(state, action: PayloadAction<UpdateTaskPayload>) {
       const { taskId, title, subtitle, status, tags } = action.payload;

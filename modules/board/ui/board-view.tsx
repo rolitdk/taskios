@@ -143,6 +143,7 @@ export function BoardView({ boardId, highlightedTaskId }: BoardViewProps) {
           <TaskForm
             key={`create-${taskModal.status}`}
             mode="create"
+            boardId={boardId}
             defaultStatus={taskModal.status}
             onCancel={closeTaskModal}
             onCreated={closeTaskModal}

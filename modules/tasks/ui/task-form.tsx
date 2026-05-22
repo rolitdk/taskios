@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 
 import {
@@ -11,11 +12,10 @@ import {
   TagsFormField,
   type TagFormEntry,
 } from "@/modules/tasks/ui/tag-form-field";
+import { useCreateTask } from "@/modules/tasks/hooks/use-create-task";
 import { useEditTask } from "@/modules/tasks/hooks/use-edit-task";
 import type { BoardTask, TaskStatus, TaskTag } from "@/modules/board/model/board-types";
 import { COLUMN_DEFINITIONS } from "@/modules/board/model/board-types";
-import { useAppDispatch } from "@/store/hooks";
-import { addTask } from "@/modules/tasks/model/tasks-slice";
 
 export type TaskFormValues = {
   title: string;
@@ -26,6 +26,7 @@ export type TaskFormValues = {
 
 type TaskFormCreateProps = {
   mode: "create";
+  boardId: string;
   defaultStatus: TaskStatus;
   onCancel: () => void;
   onCreated?: () => void;
@@ -61,8 +62,24 @@ function formValuesToTags(values: TaskFormValues): TaskTag[] {
 }
 
 export function TaskForm(props: TaskFormProps) {
-  const dispatch = useAppDispatch();
-  const { editTask } = useEditTask();
+  const { editTask, isSaving, error: editError, clearError: clearEditError } =
+    useEditTask();
+  const {
+    createTask,
+    isCreating,
+    error: createError,
+    clearError: clearCreateError,
+  } = useCreateTask();
+
+  const error = props.mode === "create" ? createError : editError;
+  const isSubmittingTask = props.mode === "create" ? isCreating : isSaving;
+
+  useEffect(() => {
+    return () => {
+      clearCreateError();
+      clearEditError();
+    };
+  }, [clearCreateError, clearEditError]);
 
   const defaultValues: TaskFormValues =
     props.mode === "edit"
@@ -102,30 +119,35 @@ export function TaskForm(props: TaskFormProps) {
     });
   };
 
-  const onSubmit = handleSubmit((values) => {
+  const onSubmit = handleSubmit(async (values) => {
     const normalizedTags = formValuesToTags(values);
 
     if (props.mode === "edit") {
-      editTask({
+      const saved = await editTask({
         taskId: props.task.id,
         title: values.title,
         subtitle: values.subtitle,
         status: values.status,
         tags: normalizedTags,
       });
-      props.onSaved?.();
+
+      if (saved) {
+        props.onSaved?.();
+      }
       return;
     }
 
-    dispatch(
-      addTask({
-        title: values.title,
-        subtitle: values.subtitle,
-        status: values.status,
-        tags: normalizedTags,
-      }),
-    );
-    props.onCreated?.();
+    const created = await createTask({
+      boardId: props.boardId,
+      title: values.title,
+      subtitle: values.subtitle,
+      status: values.status,
+      tags: normalizedTags,
+    });
+
+    if (created) {
+      props.onCreated?.();
+    }
   });
 
   const submitLabel = props.mode === "edit" ? "Сохранить" : "Создать";
@@ -136,6 +158,11 @@ export function TaskForm(props: TaskFormProps) {
       className="bg-surface flex max-h-[min(36rem,calc(100dvh-2.5rem))] flex-col overflow-hidden rounded-2xl shadow-sm ring-1 ring-black/5"
     >
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3 [scrollbar-width:thin]">
+      {error ? (
+        <p className="text-sm text-red-600" role="alert">
+          {error}
+        </p>
+      ) : null}
       <FormField label="Название" error={errors.title?.message}>
         <input
           {...registerTitle()}
@@ -180,7 +207,7 @@ export function TaskForm(props: TaskFormProps) {
       <div className="bg-surface flex shrink-0 gap-2 border-t border-black/5 p-3 pt-2">
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isSubmittingTask}
           className="bg-accent hover:bg-accent-strong flex-1 rounded-xl px-3 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60"
         >
           {submitLabel}

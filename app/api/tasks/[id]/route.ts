@@ -1,6 +1,8 @@
 import { db } from "@/shared/server/db";
 import { apiError, noContent, ok } from "@/shared/server/http";
 import { getAuthenticatedUserId } from "@/shared/server/session";
+import { toPublicTask } from "@/shared/server/task-serializer";
+import { normalizeTaskTags, taskTagsToJson } from "@/shared/server/task-tags";
 import {
   formatZodErrorMessage,
   updateTaskSchema,
@@ -65,12 +67,18 @@ export async function PATCH(
       );
     }
 
+    const { tags, ...taskData } = parsed.data;
     const updatedTask = await db.task.update({
       where: { id },
-      data: parsed.data,
+      data: {
+        ...taskData,
+        ...(tags !== undefined
+          ? { tags: taskTagsToJson(normalizeTaskTags(tags)) }
+          : {}),
+      },
     });
 
-    return ok({ task: updatedTask });
+    return ok({ task: toPublicTask(updatedTask) });
   } catch (error) {
     if (error instanceof SyntaxError) {
       return apiError(400, "INVALID_JSON", "Некорректный JSON");
