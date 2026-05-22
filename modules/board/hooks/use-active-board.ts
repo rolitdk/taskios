@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 export function useActiveBoard(boardId: string) {
   const dispatch = useAppDispatch();
   const boardExists = useAppSelector((state) =>
-    state.tasks.boardMetas.some((board) => board.id === boardId),
+    state.tasks.boardCatalog.some((board) => board.id === boardId),
   );
 
   useLayoutEffect(() => {

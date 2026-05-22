@@ -1,16 +1,16 @@
-export type BoardMetaDto = {
+export type BoardDto = {
   id: string;
   title: string;
 };
 
 export type BoardsListResponse = {
-  boards: BoardMetaDto[];
+  boards: BoardDto[];
 };
 
 export type CreateBoardResponse = {
-  board: BoardMetaDto;
+  board: BoardDto;
 };
 
 export type UpdateBoardResponse = {
-  board: BoardMetaDto;
+  board: BoardDto;
 };

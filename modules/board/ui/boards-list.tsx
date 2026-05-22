@@ -12,12 +12,12 @@ import {
   EditActionButton,
 } from "@/components/ui/card-action-buttons";
 import { TaskModal } from "@/modules/tasks/ui/task-modal";
-import type { BoardCatalogMeta } from "@/modules/board/model/board-catalog";
+import type { BoardCatalogItem } from "@/modules/board/model/board-catalog";
 import { useDeleteBoard } from "@/modules/board/hooks/use-delete-board";
 import { useLoadBoards } from "@/modules/board/hooks/use-load-boards";
 import { useLoadTasks } from "@/modules/tasks/hooks/use-load-tasks";
 import { useAppSelector } from "@/store/hooks";
-import { selectAllBoardMetas } from "@/modules/board/store/board-selectors";
+import { selectBoardCatalogItems } from "@/modules/board/store/board-selectors";
 
 type EditBoardState = {
   boardId: string;
@@ -35,7 +35,7 @@ export function BoardsList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoading } = useAuth();
-  const boards = useAppSelector(selectAllBoardMetas);
+  const boards = useAppSelector(selectBoardCatalogItems);
   const { isLoading: isBoardsLoading, isReady: isBoardsReady, error: boardsLoadError } =
     useLoadBoards();
   const { error: tasksLoadError } = useLoadTasks({ enabled: isBoardsReady });
@@ -75,11 +75,11 @@ export function BoardsList() {
     }
   };
 
-  const openEdit = (board: BoardCatalogMeta) => {
+  const openEdit = (board: BoardCatalogItem) => {
     setEditBoard({ boardId: board.id, title: board.title });
   };
 
-  const openDelete = (board: BoardCatalogMeta) => {
+  const openDelete = (board: BoardCatalogItem) => {
     setDeleteBoardState({ boardId: board.id, title: board.title });
   };
 

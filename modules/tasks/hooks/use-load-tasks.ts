@@ -17,13 +17,13 @@ export function useLoadTasks(options: UseLoadTasksOptions = {}) {
   const { enabled = true } = options;
   const dispatch = useAppDispatch();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const boardMetas = useAppSelector((state) => state.tasks.boardMetas);
+  const boardCatalog = useAppSelector((state) => state.tasks.boardCatalog);
   const [loadedBoardIdsKey, setLoadedBoardIdsKey] = useState<string | null>(
     null,
   );
   const [error, setError] = useState<string | null>(null);
 
-  const boardIdsKey = boardMetas.map((board) => board.id).join(",");
+  const boardIdsKey = boardCatalog.map((board) => board.id).join(",");
 
   useEffect(() => {
     if (isAuthLoading || !enabled) {

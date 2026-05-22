@@ -39,20 +39,20 @@ export type RemoveTaskPayload = {
   taskId: string;
 };
 
-export type BoardMeta = {
+export type BoardCatalogEntry = {
   id: string;
   title: string;
 };
 
 type TasksState = {
   activeBoardId: string;
-  boardMetas: BoardMeta[];
+  boardCatalog: BoardCatalogEntry[];
   boards: Record<string, BoardTask[]>;
 };
 
 const initialState: TasksState = {
   activeBoardId: "",
-  boardMetas: [],
+  boardCatalog: [],
   boards: {},
 };
 
@@ -118,14 +118,14 @@ const tasksSlice = createSlice({
   initialState,
   reducers: {
     setActiveBoard(state, action: PayloadAction<string>) {
-      if (state.boardMetas.some((board) => board.id === action.payload)) {
+      if (state.boardCatalog.some((board) => board.id === action.payload)) {
         state.activeBoardId = action.payload;
       }
     },
-    setBoardCatalog(state, action: PayloadAction<BoardMeta[]>) {
-      state.boardMetas = action.payload;
+    setBoardCatalog(state, action: PayloadAction<BoardCatalogEntry[]>) {
+      state.boardCatalog = action.payload;
       state.boards = Object.fromEntries(
-        action.payload.map((meta) => [meta.id, state.boards[meta.id] ?? []]),
+        action.payload.map((entry) => [entry.id, state.boards[entry.id] ?? []]),
       );
 
       if (
@@ -139,8 +139,8 @@ const tasksSlice = createSlice({
       state,
       action: PayloadAction<Record<string, BoardTask[]>>,
     ) {
-      for (const meta of state.boardMetas) {
-        state.boards[meta.id] = action.payload[meta.id] ?? [];
+      for (const entry of state.boardCatalog) {
+        state.boards[entry.id] = action.payload[entry.id] ?? [];
       }
     },
     updateBoardTitle(
@@ -148,39 +148,39 @@ const tasksSlice = createSlice({
       action: PayloadAction<{ boardId: string; title: string }>,
     ) {
       const { boardId, title } = action.payload;
-      const meta = state.boardMetas.find((board) => board.id === boardId);
-      if (!meta) {
+      const entry = state.boardCatalog.find((board) => board.id === boardId);
+      if (!entry) {
         return;
       }
-      meta.title = title.trim();
+      entry.title = title.trim();
     },
-    addBoard(state, action: PayloadAction<BoardMeta>) {
+    addBoard(state, action: PayloadAction<BoardCatalogEntry>) {
       const { id, title } = action.payload;
       const trimmedTitle = title.trim();
       if (trimmedTitle.length < 2) {
         return;
       }
 
-      if (state.boardMetas.some((board) => board.id === id)) {
+      if (state.boardCatalog.some((board) => board.id === id)) {
         return;
       }
 
-      state.boardMetas.push({ id, title: trimmedTitle });
+      state.boardCatalog.push({ id, title: trimmedTitle });
       state.boards[id] = [];
     },
     removeBoard(state, action: PayloadAction<string>) {
       const boardId = action.payload;
-      const exists = state.boardMetas.some((board) => board.id === boardId);
+      const exists = state.boardCatalog.some((board) => board.id === boardId);
       if (!exists) {
         return;
       }
 
-      state.boardMetas = state.boardMetas.filter((board) => board.id !== boardId);
+      state.boardCatalog = state.boardCatalog.filter((board) => board.id !== boardId);
       delete state.boards[boardId];
 
       if (state.activeBoardId === boardId) {
         state.activeBoardId =
-          state.boardMetas[0]?.id ?? state.activeBoardId;
+          state.boardCatalog[0]?.id ?? state.activeBoardId;
       }
     },
     moveTask(state, action: PayloadAction<MoveTaskPayload>) {

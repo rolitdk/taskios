@@ -1,6 +1,6 @@
 import type { BoardTask } from "@/modules/board/model/board-types";
 
-export type BoardCatalogMeta = {
+export type BoardCatalogItem = {
   id: string;
   title: string;
   href: string;
@@ -28,13 +28,13 @@ export function boardHrefWithHighlightTask(
 
 export function toSearchableEntries(
   tasks: BoardTask[],
-  meta: BoardCatalogMeta,
+  catalogItem: BoardCatalogItem,
 ): SearchableTaskEntry[] {
   return tasks.map((task) => ({
     task,
-    boardId: meta.id,
-    boardTitle: meta.title,
-    boardHref: meta.href,
+    boardId: catalogItem.id,
+    boardTitle: catalogItem.title,
+    boardHref: catalogItem.href,
   }));
 }
 

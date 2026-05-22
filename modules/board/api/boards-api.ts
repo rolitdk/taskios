@@ -1,6 +1,6 @@
 import type { ApiErrorBody } from "@/modules/user/model/auth-types";
 import type {
-  BoardMetaDto,
+  BoardDto,
   BoardsListResponse,
   CreateBoardResponse,
   UpdateBoardResponse,
@@ -36,7 +36,7 @@ async function parseBoardsResponse<T>(
   return body as T;
 }
 
-export async function fetchBoards(): Promise<BoardMetaDto[]> {
+export async function fetchBoards(): Promise<BoardDto[]> {
   const response = await fetch(BOARDS_API, { method: "GET" });
   const body = await parseBoardsResponse<BoardsListResponse>(
     response,
@@ -46,7 +46,7 @@ export async function fetchBoards(): Promise<BoardMetaDto[]> {
   return body.boards;
 }
 
-export async function createBoard(title: string): Promise<BoardMetaDto> {
+export async function createBoard(title: string): Promise<BoardDto> {
   const response = await fetch(BOARDS_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -63,7 +63,7 @@ export async function createBoard(title: string): Promise<BoardMetaDto> {
 export async function updateBoard(
   boardId: string,
   title: string,
-): Promise<BoardMetaDto> {
+): Promise<BoardDto> {
   const response = await fetch(`${BOARDS_API}/${boardId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },

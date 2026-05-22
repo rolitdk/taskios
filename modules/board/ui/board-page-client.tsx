@@ -10,7 +10,7 @@ import { useLoadBoards } from "@/modules/board/hooks/use-load-boards";
 import { useLoadTasks } from "@/modules/tasks/hooks/use-load-tasks";
 import { BOARD_HIGHLIGHT_TASK_QUERY } from "@/modules/board/model/board-catalog";
 import { useAppSelector } from "@/store/hooks";
-import { selectBoardMetaById } from "@/modules/board/store/board-selectors";
+import { selectBoardCatalogItemById } from "@/modules/board/store/board-selectors";
 
 const HIGHLIGHT_DURATION_MS = 3500;
 
@@ -29,7 +29,9 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
     enabled: isBoardsReady,
   });
 
-  const board = useAppSelector((state) => selectBoardMetaById(state, boardId));
+  const board = useAppSelector((state) =>
+    selectBoardCatalogItemById(state, boardId),
+  );
 
   useEffect(() => {
     if (!highlightedTaskId) {

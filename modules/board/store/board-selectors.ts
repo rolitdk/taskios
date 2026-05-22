@@ -5,7 +5,7 @@ import {
   type BoardColumn,
   type BoardTask,
 } from "@/modules/board/model/board-types";
-import type { BoardCatalogMeta } from "@/modules/board/model/board-catalog";
+import type { BoardCatalogItem } from "@/modules/board/model/board-catalog";
 import type { RootState } from "@/store/store";
 
 function boardHref(boardId: string): string {
@@ -14,20 +14,20 @@ function boardHref(boardId: string): string {
 
 const selectActiveBoardId = (state: RootState) => state.tasks.activeBoardId;
 const selectBoards = (state: RootState) => state.tasks.boards;
-const selectBoardMetas = (state: RootState) => state.tasks.boardMetas;
+const selectBoardCatalog = (state: RootState) => state.tasks.boardCatalog;
 
-export const selectAllBoardMetas = createSelector(
-  [selectBoardMetas],
-  (metas): BoardCatalogMeta[] =>
-    metas.map((meta) => ({
-      ...meta,
-      href: boardHref(meta.id),
+export const selectBoardCatalogItems = createSelector(
+  [selectBoardCatalog],
+  (catalog): BoardCatalogItem[] =>
+    catalog.map((entry) => ({
+      ...entry,
+      href: boardHref(entry.id),
     })),
 );
 
-export const selectBoardMetaById = createSelector(
-  [selectAllBoardMetas, (_state: RootState, boardId: string) => boardId],
-  (metas, boardId) => metas.find((meta) => meta.id === boardId),
+export const selectBoardCatalogItemById = createSelector(
+  [selectBoardCatalogItems, (_state: RootState, boardId: string) => boardId],
+  (catalog, boardId) => catalog.find((entry) => entry.id === boardId),
 );
 
 function buildBoardColumns(tasks: BoardTask[]): BoardColumn[] {
