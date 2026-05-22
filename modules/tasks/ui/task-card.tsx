@@ -10,6 +10,7 @@ import { AVATAR_TONE_CLASSES } from "@/modules/tasks/lib/task-avatar";
 import { useDeleteTask } from "@/modules/tasks/hooks/use-delete-task";
 
 type TaskCardProps = {
+  boardId: string;
   task: BoardTask;
   showDelete?: boolean;
   highlighted?: boolean;
@@ -17,6 +18,7 @@ type TaskCardProps = {
 };
 
 export function TaskCard({
+  boardId,
   task,
   showDelete = true,
   highlighted = false,
@@ -43,7 +45,7 @@ export function TaskCard({
           ) : null}
           {showDelete ? (
             <DeleteActionButton
-              onClick={() => deleteTask(task.id)}
+              onClick={() => deleteTask({ boardId, task })}
               aria-label={`Удалить задачу «${task.title}»`}
             />
           ) : null}

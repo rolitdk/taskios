@@ -8,12 +8,14 @@ import type { BoardTask } from "@/modules/board/model/board-types";
 import { TaskCard } from "./task-card";
 
 type SortableTaskCardProps = {
+  boardId: string;
   task: BoardTask;
   highlighted?: boolean;
   onEdit: (task: BoardTask) => void;
 };
 
 export function SortableTaskCard({
+  boardId,
   task,
   highlighted = false,
   onEdit,
@@ -63,6 +65,7 @@ export function SortableTaskCard({
       {...listeners}
     >
       <TaskCard
+        boardId={boardId}
         task={task}
         highlighted={highlighted}
         onEdit={() => onEdit(task)}

@@ -127,6 +127,7 @@ export function BoardColumn({
             column.tasks.map((task) => (
               <SortableTaskCard
                 key={task.id}
+                boardId={boardId}
                 task={task}
                 highlighted={task.id === highlightedTaskId}
                 onEdit={onEditTask}

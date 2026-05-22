@@ -34,6 +34,11 @@ export type ClearColumnTasksPayload = {
   status: TaskStatus;
 };
 
+export type RemoveTaskPayload = {
+  boardId: string;
+  taskId: string;
+};
+
 export type BoardMeta = {
   id: string;
   title: string;
@@ -281,9 +286,14 @@ const tasksSlice = createSlice({
         ),
       );
     },
-    removeTask(state, action: PayloadAction<string>) {
-      const taskId = action.payload;
-      const tasks = getActiveTasks(state);
+    removeTask(state, action: PayloadAction<RemoveTaskPayload>) {
+      const { boardId, taskId } = action.payload;
+      const resolvedBoardId = resolveBoardId(state, boardId);
+      if (!resolvedBoardId) {
+        return;
+      }
+
+      const tasks = getBoardTasks(state, resolvedBoardId);
       const removed = tasks.find((task) => task.id === taskId);
       if (!removed) {
         return;
@@ -304,7 +314,7 @@ const tasksSlice = createSlice({
         return item;
       });
 
-      setActiveTasks(state, reordered);
+      setBoardTasks(state, resolvedBoardId, reordered);
     },
   },
 });

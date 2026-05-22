@@ -155,7 +155,7 @@ export function BoardView({ boardId, highlightedTaskId }: BoardViewProps) {
       <DragOverlay dropAnimation={null}>
         {activeTask ? (
           <div className="w-72 rotate-1 opacity-95">
-            <TaskCard task={activeTask} showDelete={false} />
+            <TaskCard boardId={boardId} task={activeTask} showDelete={false} />
           </div>
         ) : null}
       </DragOverlay>

@@ -85,6 +85,21 @@ export async function fetchTasks(boardId?: string): Promise<TaskDto[]> {
   return body.tasks;
 }
 
+export async function deleteTask(taskId: string): Promise<void> {
+  const response = await fetch(`${TASKS_API}/${taskId}`, {
+    method: "DELETE",
+  });
+
+  if (response.status === 204) {
+    return;
+  }
+
+  const body = await readResponseJson<ApiErrorBody>(response);
+  throw new TasksApiError(
+    getApiErrorMessage(body, "Не удалось удалить задачу"),
+  );
+}
+
 export async function clearColumnTasks(
   boardId: string,
   status: TaskStatus,
