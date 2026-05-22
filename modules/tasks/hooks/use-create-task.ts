@@ -42,6 +42,7 @@ export function useCreateTask() {
             subtitle: boardTask.subtitle,
             status: boardTask.status,
             tags: boardTask.tags,
+            order: boardTask.order,
           }),
         );
         return true;

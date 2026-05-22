@@ -1,30 +1,9 @@
-import { z } from "zod";
-
-import { db } from "@/shared/server/db";
 import { apiError, noContent } from "@/shared/server/http";
+import {
+  clearBoardColumnTasks,
+  parseColumnStatus,
+} from "@/shared/server/clear-board-column";
 import { getAuthenticatedUserId } from "@/shared/server/session";
-import { taskStatusValues } from "@/shared/server/validation";
-
-async function ensureBoardAccess(
-  boardId: string,
-  userId: string,
-): Promise<boolean> {
-  const project = await db.project.findFirst({
-    where: {
-      id: boardId,
-      members: {
-        some: {
-          userId,
-        },
-      },
-    },
-    select: { id: true },
-  });
-
-  return Boolean(project);
-}
-
-const columnStatusSchema = z.enum(taskStatusValues);
 
 export async function DELETE(
   request: Request,
@@ -36,12 +15,8 @@ export async function DELETE(
   }
 
   const { id: boardId } = await context.params;
-  if (!(await ensureBoardAccess(boardId, userId))) {
-    return apiError(404, "BOARD_NOT_FOUND", "Доска не найдена");
-  }
-
   const statusParam = new URL(request.url).searchParams.get("status");
-  const parsed = columnStatusSchema.safeParse(statusParam);
+  const parsed = parseColumnStatus(statusParam);
   if (!parsed.success) {
     return apiError(
       400,
@@ -50,12 +25,10 @@ export async function DELETE(
     );
   }
 
-  await db.task.deleteMany({
-    where: {
-      projectId: boardId,
-      status: parsed.data,
-    },
-  });
+  const cleared = await clearBoardColumnTasks(boardId, parsed.data, userId);
+  if (!cleared) {
+    return apiError(404, "BOARD_NOT_FOUND", "Доска не найдена");
+  }
 
   return noContent();
 }

@@ -26,12 +26,11 @@ export function useMoveTask() {
         }),
       );
 
-      if (input.previousStatus === input.status) {
-        return true;
-      }
-
       try {
-        await updateTaskRequest(input.taskId, { status: input.status });
+        await updateTaskRequest(input.taskId, {
+          status: input.status,
+          sortOrder: input.order,
+        });
         return true;
       } catch {
         dispatch(

@@ -30,13 +30,10 @@ export function mapTasksToBoardTasks(tasks: TaskDto[]): BoardTask[] {
   for (const status of COLUMN_ORDER) {
     const columnTasks = tasks
       .filter((task) => task.status === status)
-      .sort(
-        (a, b) =>
-          new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
-      );
+      .sort((a, b) => a.sortOrder - b.sortOrder);
 
-    columnTasks.forEach((task, order) => {
-      result.push(mapTaskDto(task, order, avatarIndex));
+    columnTasks.forEach((task) => {
+      result.push(mapTaskDto(task, task.sortOrder, avatarIndex));
       avatarIndex += 1;
     });
   }
@@ -48,9 +45,7 @@ export function boardTaskFromCreated(
   task: TaskDto,
   existingTasks: BoardTask[],
 ): BoardTask {
-  const order = existingTasks.filter((item) => item.status === task.status).length;
-
-  return mapTaskDto(task, order, existingTasks.length);
+  return mapTaskDto(task, task.sortOrder, existingTasks.length);
 }
 
 export function taskUpdatePayloadFromDto(task: TaskDto) {

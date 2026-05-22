@@ -10,6 +10,7 @@ export type CreateTaskPayload = {
   subtitle: string;
   status: TaskStatus;
   tags: TaskTag[];
+  order?: number;
 };
 
 export type UpdateTaskPayload = {
@@ -191,7 +192,8 @@ const tasksSlice = createSlice({
       );
     },
     addTask(state, action: PayloadAction<CreateTaskPayload>) {
-      const { boardId, id, title, subtitle, status, tags } = action.payload;
+      const { boardId, id, title, subtitle, status, tags, order } =
+        action.payload;
       const targetBoardId = boardId ?? state.activeBoardId;
       if (!targetBoardId) {
         return;
@@ -199,7 +201,7 @@ const tasksSlice = createSlice({
 
       const tasks = getBoardTasks(state, targetBoardId);
       const columnTasks = tasks.filter((task) => task.status === status);
-      const nextOrder = columnTasks.length;
+      const nextOrder = order ?? columnTasks.length;
 
       const newTask: BoardTask = {
         id: id ?? `t-${crypto.randomUUID()}`,
@@ -212,7 +214,11 @@ const tasksSlice = createSlice({
         order: nextOrder,
       };
 
-      setBoardTasks(state, targetBoardId, [...tasks, newTask]);
+      setBoardTasks(
+        state,
+        targetBoardId,
+        reorderTasks([...tasks, newTask], newTask.id, status, nextOrder),
+      );
     },
     updateTask(state, action: PayloadAction<UpdateTaskPayload>) {
       const { boardId, taskId, title, subtitle, status, tags } = action.payload;

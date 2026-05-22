@@ -65,31 +65,21 @@ export function BoardView({ boardId, highlightedTaskId }: BoardViewProps) {
       return;
     }
 
-    const dropTarget = resolveDropTarget(String(over.id), tasks);
-    if (!dropTarget) {
-      return;
-    }
-
     const activeTaskItem = tasks.find((task) => task.id === active.id);
     if (!activeTaskItem) {
       return;
     }
 
-    const columnTasks = tasks
-      .filter(
-        (task) => task.status === dropTarget.status && task.id !== active.id,
-      )
-      .sort((a, b) => a.order - b.order);
-
-    let order = dropTarget.order;
-    if (String(over.id) !== dropTarget.status) {
-      const overIndex = columnTasks.findIndex((task) => task.id === over.id);
-      if (overIndex >= 0) {
-        order = overIndex;
-      }
-    } else {
-      order = columnTasks.length;
+    const dropTarget = resolveDropTarget(
+      String(over.id),
+      tasks,
+      String(active.id),
+    );
+    if (!dropTarget) {
+      return;
     }
+
+    const { order } = dropTarget;
 
     if (
       activeTaskItem.status === dropTarget.status &&

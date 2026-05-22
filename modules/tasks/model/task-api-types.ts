@@ -9,6 +9,7 @@ export type TaskDto = {
   status: TaskStatus;
   priority: TaskPriority;
   dueDate: string;
+  sortOrder: number;
   tags: TaskTagRecord[];
 };
 
@@ -32,7 +33,9 @@ export type CreateTaskResponse = {
 
 export type UpdateTaskRequest = Partial<
   Omit<CreateTaskRequest, "projectId">
->;
+> & {
+  sortOrder?: number;
+};
 
 export type UpdateTaskResponse = {
   task: TaskDto;

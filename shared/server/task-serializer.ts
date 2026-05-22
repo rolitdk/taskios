@@ -11,6 +11,7 @@ export type PublicTask = {
   status: Task["status"];
   priority: Task["priority"];
   dueDate: string;
+  sortOrder: number;
   tags: TaskTagRecord[];
 };
 
@@ -23,6 +24,7 @@ export function toPublicTask(task: Task): PublicTask {
     status: task.status,
     priority: task.priority,
     dueDate: task.dueDate.toISOString(),
+    sortOrder: task.sortOrder,
     tags: parseTaskTagsFromJson(task.tags),
   };
 }

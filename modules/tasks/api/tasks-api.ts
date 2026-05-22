@@ -10,7 +10,6 @@ import type {
 } from "@/modules/tasks/model/task-api-types";
 import { getApiErrorMessage, readResponseJson } from "@/shared/lib/api-client";
 
-const BOARDS_API = "/api/boards";
 const TASKS_API = "/api/tasks";
 
 export class TasksApiError extends Error {
@@ -90,10 +89,11 @@ export async function clearColumnTasks(
   boardId: string,
   status: TaskStatus,
 ): Promise<void> {
-  const response = await fetch(
-    `${BOARDS_API}/${boardId}/tasks?status=${encodeURIComponent(status)}`,
-    { method: "DELETE" },
-  );
+  const query = new URLSearchParams({
+    projectId: boardId,
+    status,
+  });
+  const response = await fetch(`${TASKS_API}?${query}`, { method: "DELETE" });
 
   if (response.status === 204) {
     return;

@@ -68,6 +68,7 @@ export const updateTaskSchema = createTaskSchema
   .partial()
   .extend({
     tags: taskTagsSchema.optional(),
+    sortOrder: z.number().int().min(0).optional(),
   });
 
 export const createCommentSchema = z.object({
