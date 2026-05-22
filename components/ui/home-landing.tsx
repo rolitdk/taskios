@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+
+import { useAuth } from "@/modules/user/providers/auth-provider";
 
 const FEATURES = [
   {
@@ -24,6 +28,8 @@ const FEATURES = [
 ] as const;
 
 export function HomeLanding() {
+  const { user, isLoading } = useAuth();
+
   return (
     <main className="flex flex-1 flex-col">
       {/* Hero */}
@@ -46,23 +52,16 @@ export function HomeLanding() {
               перетаскивание в одном интерфейсе. Без перегруженных настроек —
               открыл доску и работаешь.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="/register"
-                className="bg-accent-strong hover:bg-accent inline-flex items-center justify-center rounded-2xl px-6 py-3.5 text-center text-sm font-semibold text-white shadow-sm transition-colors"
-              >
-                Начать бесплатно
-              </Link>
-              <Link
-                href="/login"
-                className="text-accent-strong hover:text-foreground border-accent-soft/80 inline-flex items-center justify-center rounded-2xl border bg-surface/80 px-6 py-3.5 text-center text-sm font-semibold backdrop-blur-sm transition-colors"
-              >
-                Войти в аккаунт
-              </Link>
-            </div>
-            <p className="text-muted mt-4 text-sm">
-              Регистрация за минуту · доски и задачи сразу после входа
-            </p>
+            <LandingAuthCta
+              className="mt-8"
+              primaryLabel="Начать бесплатно"
+              size="lg"
+            />
+            {!isLoading && !user && (
+              <p className="text-muted mt-4 text-sm">
+                Регистрация за минуту · доски и задачи сразу после входа
+              </p>
+            )}
           </div>
 
           <BoardPreview aria-label="Пример канбан-доски Taskios" />
@@ -121,24 +120,95 @@ export function HomeLanding() {
               команде. Taskios не подменяет тяжёлый PM, а даёт быстрый
               канбан там, где хватает колонок и карточек.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="/boards"
-                className="text-accent-strong hover:text-foreground border-accent-soft/80 inline-flex items-center justify-center rounded-2xl border bg-surface px-6 py-3 text-sm font-semibold transition-colors"
-              >
-                Перейти к доскам
-              </Link>
-              <Link
-                href="/register"
-                className="bg-accent-strong hover:bg-accent inline-flex items-center justify-center rounded-2xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors"
-              >
-                Создать аккаунт
-              </Link>
-            </div>
+            <LandingAuthCta
+              className="mt-8"
+              primaryLabel="Создать аккаунт"
+              size="md"
+            />
           </div>
         </div>
       </section>
     </main>
+  );
+}
+
+function LandingAuthCta({
+  className,
+  primaryLabel,
+  size,
+}: {
+  className?: string;
+  primaryLabel: string;
+  size: "lg" | "md";
+}) {
+  const { user, isLoading } = useAuth();
+  const padding = size === "lg" ? "px-6 py-3.5" : "px-6 py-3";
+
+  if (isLoading) {
+    return (
+      <LandingAuthCtaSkeleton className={className} size={size} />
+    );
+  }
+
+  if (user) {
+    return (
+      <div
+        className={`flex flex-col gap-3 sm:flex-row sm:items-center ${className ?? ""}`}
+      >
+        <Link
+          href="/boards"
+          className={`bg-accent-strong hover:bg-accent inline-flex items-center justify-center rounded-2xl text-center text-sm font-semibold text-white shadow-sm transition-colors ${padding}`}
+        >
+          Перейти к доскам
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`flex flex-col gap-3 sm:flex-row sm:items-center ${className ?? ""}`}
+    >
+      <Link
+        href="/register"
+        className={`bg-accent-strong hover:bg-accent inline-flex items-center justify-center rounded-2xl text-center text-sm font-semibold text-white shadow-sm transition-colors ${padding}`}
+      >
+        {primaryLabel}
+      </Link>
+      <Link
+        href="/login"
+        className={`text-accent-strong hover:text-foreground border-accent-soft/80 inline-flex items-center justify-center rounded-2xl border bg-surface/80 text-center text-sm font-semibold backdrop-blur-sm transition-colors ${padding} ${size === "md" ? "bg-surface" : ""}`}
+      >
+        Войти в аккаунт
+      </Link>
+    </div>
+  );
+}
+
+function LandingAuthCtaSkeleton({
+  className,
+  size,
+}: {
+  className?: string;
+  size: "lg" | "md";
+}) {
+  const buttonHeight = size === "lg" ? "h-[46px]" : "h-11";
+
+  return (
+    <div
+      className={`flex flex-col gap-3 sm:flex-row sm:items-center ${className ?? ""}`}
+      aria-busy="true"
+      aria-label="Загрузка действий"
+    >
+      <span
+        className={`bg-accent-soft/60 inline-block w-44 rounded-2xl ${buttonHeight} animate-pulse`}
+        aria-hidden
+      />
+      <span
+        className={`bg-shell-bg border-accent-soft/60 inline-block w-40 rounded-2xl border ${buttonHeight} animate-pulse`}
+        aria-hidden
+      />
+    </div>
   );
 }
 
