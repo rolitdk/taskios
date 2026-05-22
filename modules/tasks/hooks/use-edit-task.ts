@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 
 import { updateTask as updateTaskRequest } from "@/modules/tasks/api/tasks-api";
 import { buildUpdateTaskRequest } from "@/modules/tasks/lib/create-task-payload";
+import { taskUpdatePayloadFromDto } from "@/modules/tasks/lib/map-task-dto";
 import { updateTask, type UpdateTaskPayload } from "@/modules/tasks/model/tasks-slice";
 import { useAppDispatch } from "@/store/hooks";
 
@@ -21,15 +22,12 @@ export function useEditTask() {
 
       try {
         const request = buildUpdateTaskRequest(input);
-        await updateTaskRequest(input.taskId, request);
+        const taskDto = await updateTaskRequest(input.taskId, request);
 
         dispatch(
           updateTask({
-            taskId: input.taskId,
-            title: input.title,
-            subtitle: input.subtitle,
-            status: input.status,
-            tags: input.tags,
+            boardId: input.boardId,
+            ...taskUpdatePayloadFromDto(taskDto),
           }),
         );
         return true;

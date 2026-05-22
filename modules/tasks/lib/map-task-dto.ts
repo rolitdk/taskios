@@ -53,6 +53,19 @@ export function boardTaskFromCreated(
   return mapTaskDto(task, order, existingTasks.length);
 }
 
+export function taskUpdatePayloadFromDto(task: TaskDto) {
+  const title = task.title.trim();
+  const subtitle = task.description.trim() || "Без описания";
+
+  return {
+    taskId: task.id,
+    title,
+    subtitle,
+    status: task.status,
+    tags: task.tags,
+  };
+}
+
 export function groupTasksByBoardId(
   tasks: TaskDto[],
 ): Record<string, BoardTask[]> {

@@ -19,7 +19,7 @@ export function useClearColumnTasks() {
 
       try {
         await clearColumnTasksRequest(boardId, status);
-        dispatch(clearColumnTasks(status));
+        dispatch(clearColumnTasks({ boardId, status }));
         return true;
       } catch (cause) {
         const message =

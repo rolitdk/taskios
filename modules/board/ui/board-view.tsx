@@ -14,12 +14,12 @@ import { useState } from "react";
 
 import type { BoardTask, TaskStatus } from "@/modules/board/model/board-types";
 import { resolveDropTarget } from "@/modules/tasks/lib/dnd-utils";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppSelector } from "@/store/hooks";
 import {
   selectBoardColumnsForBoard,
   selectBoardTasksById,
 } from "@/modules/board/store/board-selectors";
-import { moveTask } from "@/modules/tasks/model/tasks-slice";
+import { useMoveTask } from "@/modules/tasks/hooks/use-move-task";
 
 import { BoardColumn } from "./board-column";
 import { TaskCard } from "../../tasks/ui/task-card";
@@ -36,7 +36,7 @@ type BoardViewProps = {
 };
 
 export function BoardView({ boardId, highlightedTaskId }: BoardViewProps) {
-  const dispatch = useAppDispatch();
+  const { moveTask: moveTaskOnBoard } = useMoveTask();
   const columns = useAppSelector((state) =>
     selectBoardColumnsForBoard(state, boardId),
   );
@@ -98,13 +98,14 @@ export function BoardView({ boardId, highlightedTaskId }: BoardViewProps) {
       return;
     }
 
-    dispatch(
-      moveTask({
-        taskId: String(active.id),
-        status: dropTarget.status,
-        order,
-      }),
-    );
+    void moveTaskOnBoard({
+      boardId,
+      taskId: String(active.id),
+      status: dropTarget.status,
+      order,
+      previousStatus: activeTaskItem.status,
+      previousOrder: activeTaskItem.order,
+    });
   };
 
   return (
@@ -153,6 +154,7 @@ export function BoardView({ boardId, highlightedTaskId }: BoardViewProps) {
           <TaskForm
             key={`edit-${taskModal.task.id}`}
             mode="edit"
+            boardId={boardId}
             task={taskModal.task}
             onCancel={closeTaskModal}
             onSaved={closeTaskModal}

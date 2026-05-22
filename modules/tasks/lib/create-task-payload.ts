@@ -35,15 +35,25 @@ export function buildCreateTaskRequest(
 }
 
 export function buildUpdateTaskRequest(input: {
-  title: string;
-  subtitle: string;
-  status: TaskStatus;
-  tags: TaskTag[];
+  title?: string;
+  subtitle?: string;
+  status?: TaskStatus;
+  tags?: TaskTag[];
 }): UpdateTaskRequest {
-  return {
-    title: input.title.trim(),
-    description: buildDescription(input.subtitle),
-    status: input.status,
-    tags: input.tags,
-  };
+  const request: UpdateTaskRequest = {};
+
+  if (input.title !== undefined) {
+    request.title = input.title.trim();
+  }
+  if (input.subtitle !== undefined) {
+    request.description = buildDescription(input.subtitle);
+  }
+  if (input.status !== undefined) {
+    request.status = input.status;
+  }
+  if (input.tags !== undefined) {
+    request.tags = input.tags;
+  }
+
+  return request;
 }

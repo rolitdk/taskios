@@ -34,6 +34,7 @@ type TaskFormCreateProps = {
 
 type TaskFormEditProps = {
   mode: "edit";
+  boardId: string;
   task: BoardTask;
   onCancel: () => void;
   onSaved?: () => void;
@@ -124,6 +125,7 @@ export function TaskForm(props: TaskFormProps) {
 
     if (props.mode === "edit") {
       const saved = await editTask({
+        boardId: props.boardId,
         taskId: props.task.id,
         title: values.title,
         subtitle: values.subtitle,

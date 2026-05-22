@@ -13,6 +13,7 @@ export type CreateTaskPayload = {
 };
 
 export type UpdateTaskPayload = {
+  boardId: string;
   taskId: string;
   title: string;
   subtitle: string;
@@ -21,9 +22,15 @@ export type UpdateTaskPayload = {
 };
 
 export type MoveTaskPayload = {
+  boardId: string;
   taskId: string;
   status: TaskStatus;
   order: number;
+};
+
+export type ClearColumnTasksPayload = {
+  boardId: string;
+  status: TaskStatus;
 };
 
 export type BoardMeta = {
@@ -90,6 +97,14 @@ function getActiveTasks(state: TasksState): BoardTask[] {
 
 function setActiveTasks(state: TasksState, tasks: BoardTask[]) {
   setBoardTasks(state, state.activeBoardId, tasks);
+}
+
+function resolveBoardId(state: TasksState, boardId: string): string | null {
+  if (!boardId || !(boardId in state.boards)) {
+    return null;
+  }
+
+  return boardId;
 }
 
 const tasksSlice = createSlice({
@@ -163,10 +178,16 @@ const tasksSlice = createSlice({
       }
     },
     moveTask(state, action: PayloadAction<MoveTaskPayload>) {
-      const { taskId, status, order } = action.payload;
-      setActiveTasks(
+      const { boardId, taskId, status, order } = action.payload;
+      const resolvedBoardId = resolveBoardId(state, boardId);
+      if (!resolvedBoardId) {
+        return;
+      }
+
+      setBoardTasks(
         state,
-        reorderTasks(getActiveTasks(state), taskId, status, order),
+        resolvedBoardId,
+        reorderTasks(getBoardTasks(state, resolvedBoardId), taskId, status, order),
       );
     },
     addTask(state, action: PayloadAction<CreateTaskPayload>) {
@@ -194,8 +215,13 @@ const tasksSlice = createSlice({
       setBoardTasks(state, targetBoardId, [...tasks, newTask]);
     },
     updateTask(state, action: PayloadAction<UpdateTaskPayload>) {
-      const { taskId, title, subtitle, status, tags } = action.payload;
-      const tasks = getActiveTasks(state);
+      const { boardId, taskId, title, subtitle, status, tags } = action.payload;
+      const resolvedBoardId = resolveBoardId(state, boardId);
+      if (!resolvedBoardId) {
+        return;
+      }
+
+      const tasks = getBoardTasks(state, resolvedBoardId);
       const task = tasks.find((item) => item.id === taskId);
       if (!task) {
         return;
@@ -211,7 +237,13 @@ const tasksSlice = createSlice({
       };
 
       if (task.status === status) {
-        Object.assign(task, updatedFields);
+        setBoardTasks(
+          state,
+          resolvedBoardId,
+          tasks.map((item) =>
+            item.id === taskId ? { ...item, ...updatedFields } : item,
+          ),
+        );
         return;
       }
 
@@ -222,16 +254,25 @@ const tasksSlice = createSlice({
         (item) => item.status === status && item.id !== taskId,
       ).length;
 
-      setActiveTasks(
+      setBoardTasks(
         state,
+        resolvedBoardId,
         reorderTasks(nextTasks, taskId, status, newColumnLength),
       );
     },
-    clearColumnTasks(state, action: PayloadAction<TaskStatus>) {
-      const status = action.payload;
-      setActiveTasks(
+    clearColumnTasks(state, action: PayloadAction<ClearColumnTasksPayload>) {
+      const { boardId, status } = action.payload;
+      const resolvedBoardId = resolveBoardId(state, boardId);
+      if (!resolvedBoardId) {
+        return;
+      }
+
+      setBoardTasks(
         state,
-        getActiveTasks(state).filter((task) => task.status !== status),
+        resolvedBoardId,
+        getBoardTasks(state, resolvedBoardId).filter(
+          (task) => task.status !== status,
+        ),
       );
     },
     removeTask(state, action: PayloadAction<string>) {

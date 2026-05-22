@@ -30,12 +30,9 @@ export type CreateTaskResponse = {
   task: TaskDto;
 };
 
-export type UpdateTaskRequest = {
-  title: string;
-  description: string;
-  status: TaskStatus;
-  tags: TaskTagRecord[];
-};
+export type UpdateTaskRequest = Partial<
+  Omit<CreateTaskRequest, "projectId">
+>;
 
 export type UpdateTaskResponse = {
   task: TaskDto;

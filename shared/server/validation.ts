@@ -64,8 +64,11 @@ export const createTaskSchema = z.object({
 });
 
 export const updateTaskSchema = createTaskSchema
-  .omit({ projectId: true })
-  .partial();
+  .omit({ projectId: true, tags: true })
+  .partial()
+  .extend({
+    tags: taskTagsSchema.optional(),
+  });
 
 export const createCommentSchema = z.object({
   text: z.string().trim().min(1).max(1500),
