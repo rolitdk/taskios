@@ -9,6 +9,7 @@ import type {
   UpdateTaskResponse,
 } from "@/modules/tasks/model/task-api-types";
 import { getApiErrorMessage, readResponseJson } from "@/shared/lib/api-client";
+import { dedupeAsync } from "@/shared/lib/dedupe-async";
 
 const TASKS_API = "/api/tasks";
 
@@ -73,16 +74,20 @@ export async function updateTask(
 }
 
 export async function fetchTasks(boardId?: string): Promise<TaskDto[]> {
-  const query = boardId
-    ? `?projectId=${encodeURIComponent(boardId)}`
-    : "";
-  const response = await fetch(`${TASKS_API}${query}`, { method: "GET" });
-  const body = await parseTasksResponse<TasksListResponse>(
-    response,
-    "Не удалось загрузить задачи",
-  );
+  const cacheKey = boardId ? `tasks:list:${boardId}` : "tasks:list:all";
 
-  return body.tasks;
+  return dedupeAsync(cacheKey, async () => {
+    const query = boardId
+      ? `?projectId=${encodeURIComponent(boardId)}`
+      : "";
+    const response = await fetch(`${TASKS_API}${query}`, { method: "GET" });
+    const body = await parseTasksResponse<TasksListResponse>(
+      response,
+      "Не удалось загрузить задачи",
+    );
+
+    return body.tasks;
+  });
 }
 
 export async function deleteTask(taskId: string): Promise<void> {

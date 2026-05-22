@@ -6,6 +6,7 @@ import type {
   UpdateBoardResponse,
 } from "@/modules/board/model/board-api-types";
 import { getApiErrorMessage, readResponseJson } from "@/shared/lib/api-client";
+import { dedupeAsync } from "@/shared/lib/dedupe-async";
 
 const BOARDS_API = "/api/boards";
 
@@ -37,13 +38,15 @@ async function parseBoardsResponse<T>(
 }
 
 export async function fetchBoards(): Promise<BoardDto[]> {
-  const response = await fetch(BOARDS_API, { method: "GET" });
-  const body = await parseBoardsResponse<BoardsListResponse>(
-    response,
-    "Не удалось загрузить доски",
-  );
+  return dedupeAsync("boards:list", async () => {
+    const response = await fetch(BOARDS_API, { method: "GET" });
+    const body = await parseBoardsResponse<BoardsListResponse>(
+      response,
+      "Не удалось загрузить доски",
+    );
 
-  return body.boards;
+    return body.boards;
+  });
 }
 
 export async function createBoard(title: string): Promise<BoardDto> {

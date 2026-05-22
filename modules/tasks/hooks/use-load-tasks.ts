@@ -60,14 +60,60 @@ export function useLoadTasks(options: UseLoadTasksOptions = {}) {
     return () => {
       cancelled = true;
     };
-  }, [boardIdsKey, dispatch, enabled, isAuthLoading, user]);
+    // Первая загрузка — после готовности каталога досок, без привязки к boardIdsKey.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- boardIdsKey обрабатывается отдельным effect
+  }, [dispatch, enabled, isAuthLoading, user]);
+
+  useEffect(() => {
+    if (isAuthLoading || !enabled || !user) {
+      return;
+    }
+
+    if (loadedBoardIdsKey === null || loadedBoardIdsKey === boardIdsKey) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const tasks = await fetchTasks();
+        if (!cancelled) {
+          dispatch(setAllBoardTasks(groupTasksByBoardId(tasks)));
+          setError(null);
+          setLoadedBoardIdsKey(boardIdsKey);
+        }
+      } catch (cause) {
+        if (!cancelled) {
+          const message =
+            cause instanceof Error
+              ? cause.message
+              : "Не удалось загрузить задачи";
+          setError(message);
+          setLoadedBoardIdsKey(boardIdsKey);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    boardIdsKey,
+    dispatch,
+    enabled,
+    isAuthLoading,
+    loadedBoardIdsKey,
+    user,
+  ]);
 
   const isGuestReady = !isAuthLoading && !user;
+  const syncedBoardIdsKey = user ? loadedBoardIdsKey : null;
   const isLoading =
     Boolean(user) &&
     enabled &&
     !isAuthLoading &&
-    loadedBoardIdsKey !== boardIdsKey;
+    syncedBoardIdsKey !== boardIdsKey;
   const isReady = isGuestReady || (!isLoading && enabled && !isAuthLoading);
 
   return { isLoading, isReady, error };

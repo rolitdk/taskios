@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AppDataProvider } from "@/components/providers/app-data-provider";
 import { AppShellCreateBoardButton } from "@/components/ui/app-shell-create-board-button";
 import { AppShellFooter } from "@/components/ui/app-shell-footer";
 import { AppShellSearchSlot } from "@/components/ui/app-shell-search-slot";
@@ -11,6 +12,7 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
   return (
+    <AppDataProvider>
     <div className="flex min-h-screen flex-col">
       <header className="bg-shell-bg border-accent-soft/60 text-foreground sticky top-0 z-10 border-b shadow-sm backdrop-blur-sm">
         <div className="mx-auto flex max-w-[1600px] items-center gap-4 px-4 py-3 sm:px-6">
@@ -45,6 +47,7 @@ export function AppShell({ children }: AppShellProps) {
       <div className="flex flex-1 flex-col">{children}</div>
       <AppShellFooter />
     </div>
+    </AppDataProvider>
   );
 }
 

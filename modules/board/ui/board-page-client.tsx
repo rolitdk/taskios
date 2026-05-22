@@ -6,8 +6,10 @@ import { useEffect } from "react";
 
 import { BoardView } from "@/modules/board/ui/board-view";
 import { useActiveBoard } from "@/modules/board/hooks/use-active-board";
-import { useLoadBoards } from "@/modules/board/hooks/use-load-boards";
-import { useLoadTasks } from "@/modules/tasks/hooks/use-load-tasks";
+import {
+  useBoardsLoad,
+  useTasksLoad,
+} from "@/components/providers/app-data-provider";
 import { BOARD_HIGHLIGHT_TASK_QUERY } from "@/modules/board/model/board-catalog";
 import { useAppSelector } from "@/store/hooks";
 import { selectBoardCatalogItemById } from "@/modules/board/store/board-selectors";
@@ -24,10 +26,8 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
   const searchParams = useSearchParams();
   const highlightedTaskId = searchParams.get(BOARD_HIGHLIGHT_TASK_QUERY);
   useActiveBoard(boardId);
-  const { isLoading: isBoardsLoading, isReady: isBoardsReady } = useLoadBoards();
-  const { isLoading: isTasksLoading, error: tasksLoadError } = useLoadTasks({
-    enabled: isBoardsReady,
-  });
+  const { isLoading: isBoardsLoading, isReady: isBoardsReady } = useBoardsLoad();
+  const { isLoading: isTasksLoading, error: tasksLoadError } = useTasksLoad();
 
   const board = useAppSelector((state) =>
     selectBoardCatalogItemById(state, boardId),
