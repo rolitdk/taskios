@@ -114,6 +114,22 @@ function resolveBoardId(state: TasksState, boardId: string): string | null {
   return boardId;
 }
 
+function buildBoardIdsKey(catalog: BoardCatalogEntry[]): string {
+  return catalog.map((board) => board.id).join(",");
+}
+
+/** Сохраняет локальную синхронизацию задач после add/remove доски без refetch. */
+function syncLoadedBoardIdsKey(state: TasksState) {
+  if (state.loadedBoardIdsKey === null) {
+    return;
+  }
+
+  state.loadedBoardIdsKey =
+    state.boardCatalog.length === 0
+      ? null
+      : buildBoardIdsKey(state.boardCatalog);
+}
+
 const tasksSlice = createSlice({
   name: "tasks",
   initialState,
@@ -184,6 +200,7 @@ const tasksSlice = createSlice({
 
       state.boardCatalog.push({ id, title: trimmedTitle });
       state.boards[id] = [];
+      syncLoadedBoardIdsKey(state);
     },
     removeBoard(state, action: PayloadAction<string>) {
       const boardId = action.payload;
@@ -200,6 +217,8 @@ const tasksSlice = createSlice({
       if (state.activeBoardId === boardId) {
         state.activeBoardId = state.boardCatalog[0]?.id ?? state.activeBoardId;
       }
+
+      syncLoadedBoardIdsKey(state);
     },
     moveTask(state, action: PayloadAction<MoveTaskPayload>) {
       const { boardId, taskId, status, order } = action.payload;

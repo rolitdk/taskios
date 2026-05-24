@@ -6,6 +6,7 @@ import {
   addBoard,
   addTask,
   moveTask,
+  removeBoard,
   removeTask,
   setActiveBoard,
   setAllBoardTasks,
@@ -205,6 +206,52 @@ describe("tasksReducer", () => {
         addBoard({ id: "short", title: "  a  " }),
       );
       expect(state.boardCatalog).toHaveLength(0);
+    });
+  });
+
+  describe("loadedBoardIdsKey on catalog mutations", () => {
+    it("updates loadedBoardIdsKey after addBoard when tasks were synced", () => {
+      const state = tasksReducer(
+        seedBoard([]),
+        addBoard({ id: "board-2", title: "Вторая" }),
+      );
+
+      expect(state.loadedBoardIdsKey).toBe(`${BOARD_ID},board-2`);
+      expect(state.boards["board-2"]).toEqual([]);
+    });
+
+    it("does not set loadedBoardIdsKey after addBoard before initial task sync", () => {
+      let state = tasksReducer(undefined, setBoardCatalog(CATALOG));
+      state = tasksReducer(state, addBoard({ id: "board-2", title: "Вторая" }));
+
+      expect(state.loadedBoardIdsKey).toBeNull();
+    });
+
+    it("updates loadedBoardIdsKey after removeBoard when tasks were synced", () => {
+      let state = seedBoard([]);
+      state = tasksReducer(
+        state,
+        setBoardCatalog([
+          { id: BOARD_ID, title: "Первая" },
+          { id: "board-2", title: "Вторая" },
+        ]),
+      );
+      state = tasksReducer(
+        state,
+        setAllBoardTasks({ [BOARD_ID]: [], "board-2": [] }),
+      );
+
+      state = tasksReducer(state, removeBoard("board-2"));
+
+      expect(state.loadedBoardIdsKey).toBe(BOARD_ID);
+      expect(state.boards["board-2"]).toBeUndefined();
+    });
+
+    it("resets loadedBoardIdsKey when the last board is removed", () => {
+      const state = tasksReducer(seedBoard([]), removeBoard(BOARD_ID));
+
+      expect(state.boardCatalog).toHaveLength(0);
+      expect(state.loadedBoardIdsKey).toBeNull();
     });
   });
 });
