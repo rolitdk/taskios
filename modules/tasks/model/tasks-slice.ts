@@ -1,7 +1,14 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-import type { BoardTask, TaskStatus, TaskTag } from "@/modules/board/model/board-types";
-import { buildTaskInitials, pickAvatarTone } from "@/modules/tasks/lib/task-avatar";
+import type {
+  BoardTask,
+  TaskStatus,
+  TaskTag,
+} from "@/modules/board/model/board-types";
+import {
+  buildTaskInitials,
+  pickAvatarTone,
+} from "@/modules/tasks/lib/task-avatar";
 
 export type CreateTaskPayload = {
   boardId?: string;
@@ -48,12 +55,18 @@ type TasksState = {
   activeBoardId: string;
   boardCatalog: BoardCatalogEntry[];
   boards: Record<string, BoardTask[]>;
+  /** Ключ id досок каталога, синхронизированного с API; null — ещё не загружали */
+  boardCatalogIdsKey: string | null;
+  /** Ключ id досок, для которых tasks уже синхронизированы с API; null — ещё не загружали */
+  loadedBoardIdsKey: string | null;
 };
 
 const initialState: TasksState = {
   activeBoardId: "",
   boardCatalog: [],
   boards: {},
+  boardCatalogIdsKey: null,
+  loadedBoardIdsKey: null,
 };
 
 function reorderTasks(
@@ -89,20 +102,8 @@ function getBoardTasks(state: TasksState, boardId: string): BoardTask[] {
   return state.boards[boardId] ?? [];
 }
 
-function setBoardTasks(
-  state: TasksState,
-  boardId: string,
-  tasks: BoardTask[],
-) {
+function setBoardTasks(state: TasksState, boardId: string, tasks: BoardTask[]) {
   state.boards[boardId] = tasks;
-}
-
-function getActiveTasks(state: TasksState): BoardTask[] {
-  return getBoardTasks(state, state.activeBoardId);
-}
-
-function setActiveTasks(state: TasksState, tasks: BoardTask[]) {
-  setBoardTasks(state, state.activeBoardId, tasks);
 }
 
 function resolveBoardId(state: TasksState, boardId: string): string | null {
@@ -127,6 +128,13 @@ const tasksSlice = createSlice({
       state.boards = Object.fromEntries(
         action.payload.map((entry) => [entry.id, state.boards[entry.id] ?? []]),
       );
+      state.boardCatalogIdsKey = action.payload
+        .map((board) => board.id)
+        .join(",");
+
+      if (action.payload.length === 0) {
+        state.loadedBoardIdsKey = null;
+      }
 
       if (
         state.activeBoardId &&
@@ -142,6 +150,15 @@ const tasksSlice = createSlice({
       for (const entry of state.boardCatalog) {
         state.boards[entry.id] = action.payload[entry.id] ?? [];
       }
+      state.loadedBoardIdsKey = state.boardCatalog
+        .map((board) => board.id)
+        .join(",");
+    },
+    setBoardCatalogIdsKey(state, action: PayloadAction<string | null>) {
+      state.boardCatalogIdsKey = action.payload;
+    },
+    setLoadedBoardIdsKey(state, action: PayloadAction<string | null>) {
+      state.loadedBoardIdsKey = action.payload;
     },
     updateBoardTitle(
       state,
@@ -175,12 +192,13 @@ const tasksSlice = createSlice({
         return;
       }
 
-      state.boardCatalog = state.boardCatalog.filter((board) => board.id !== boardId);
+      state.boardCatalog = state.boardCatalog.filter(
+        (board) => board.id !== boardId,
+      );
       delete state.boards[boardId];
 
       if (state.activeBoardId === boardId) {
-        state.activeBoardId =
-          state.boardCatalog[0]?.id ?? state.activeBoardId;
+        state.activeBoardId = state.boardCatalog[0]?.id ?? state.activeBoardId;
       }
     },
     moveTask(state, action: PayloadAction<MoveTaskPayload>) {
@@ -193,7 +211,12 @@ const tasksSlice = createSlice({
       setBoardTasks(
         state,
         resolvedBoardId,
-        reorderTasks(getBoardTasks(state, resolvedBoardId), taskId, status, order),
+        reorderTasks(
+          getBoardTasks(state, resolvedBoardId),
+          taskId,
+          status,
+          order,
+        ),
       );
     },
     addTask(state, action: PayloadAction<CreateTaskPayload>) {
@@ -323,6 +346,8 @@ export const {
   setActiveBoard,
   setBoardCatalog,
   setAllBoardTasks,
+  setBoardCatalogIdsKey,
+  setLoadedBoardIdsKey,
   addBoard,
   updateBoardTitle,
   removeBoard,

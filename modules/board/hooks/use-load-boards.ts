@@ -4,16 +4,22 @@ import { useEffect, useState } from "react";
 
 import { fetchBoards } from "@/modules/board/api/boards-api";
 import { useAuth } from "@/modules/user/providers/auth-provider";
-import { setBoardCatalog } from "@/modules/tasks/model/tasks-slice";
-import { useAppDispatch } from "@/store/hooks";
-
-type FetchPhase = "idle" | "loading" | "done";
+import {
+  setBoardCatalog,
+  setBoardCatalogIdsKey,
+} from "@/modules/tasks/model/tasks-slice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 export function useLoadBoards() {
   const dispatch = useAppDispatch();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const [phase, setPhase] = useState<FetchPhase>("idle");
+  const boardCatalog = useAppSelector((state) => state.tasks.boardCatalog);
+  const boardCatalogIdsKey = useAppSelector(
+    (state) => state.tasks.boardCatalogIdsKey,
+  );
   const [error, setError] = useState<string | null>(null);
+
+  const boardIdsKey = boardCatalog.map((board) => board.id).join(",");
 
   useEffect(() => {
     if (isAuthLoading) {
@@ -21,20 +27,25 @@ export function useLoadBoards() {
     }
 
     if (!user) {
-      dispatch(setBoardCatalog([]));
-      setPhase("done");
+      if (boardCatalog.length > 0 || boardCatalogIdsKey !== null) {
+        dispatch(setBoardCatalog([]));
+        dispatch(setBoardCatalogIdsKey(null));
+      }
+      return;
+    }
+
+    if (boardCatalogIdsKey === boardIdsKey) {
       return;
     }
 
     let cancelled = false;
-    setPhase("loading");
-    setError(null);
 
-    async function load() {
+    void (async () => {
       try {
         const boards = await fetchBoards();
         if (!cancelled) {
           dispatch(setBoardCatalog(boards));
+          setError(null);
         }
       } catch (cause) {
         if (!cancelled) {
@@ -43,23 +54,28 @@ export function useLoadBoards() {
               ? cause.message
               : "Не удалось загрузить доски";
           setError(message);
-        }
-      } finally {
-        if (!cancelled) {
-          setPhase("done");
+          dispatch(setBoardCatalogIdsKey(boardIdsKey));
         }
       }
-    }
-
-    void load();
+    })();
 
     return () => {
       cancelled = true;
     };
-  }, [dispatch, isAuthLoading, user]);
+  }, [
+    boardCatalog.length,
+    boardCatalogIdsKey,
+    boardIdsKey,
+    dispatch,
+    isAuthLoading,
+    user,
+  ]);
 
-  const isLoading = isAuthLoading || phase !== "done";
-  const isReady = !isAuthLoading && phase === "done";
+  const isGuestReady = !isAuthLoading && !user;
+  const syncedCatalogKey = user ? boardCatalogIdsKey : null;
+  const isLoading =
+    Boolean(user) && !isAuthLoading && syncedCatalogKey !== boardIdsKey;
+  const isReady = isGuestReady || (!isLoading && !isAuthLoading);
 
   return { isLoading, isReady, error };
 }
