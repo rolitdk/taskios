@@ -130,6 +130,12 @@ export function readNotificationsStorageKey(userId: string | null): string {
   return `taskios:read-notifications:${userId ?? "guest"}`;
 }
 
+export function dismissedNotificationsStorageKey(
+  userId: string | null,
+): string {
+  return `taskios:dismissed-notifications:${userId ?? "guest"}`;
+}
+
 export function loadReadNotificationIds(key: string): Set<string> {
   if (typeof window === "undefined") {
     return new Set();
@@ -151,6 +157,37 @@ export function loadReadNotificationIds(key: string): Set<string> {
 }
 
 export function saveReadNotificationIds(key: string, ids: Set<string>): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(key, JSON.stringify([...ids]));
+}
+
+export function loadDismissedNotificationIds(key: string): Set<string> {
+  if (typeof window === "undefined") {
+    return new Set();
+  }
+
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) {
+      return new Set();
+    }
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return new Set();
+    }
+    return new Set(parsed.filter((id): id is string => typeof id === "string"));
+  } catch {
+    return new Set();
+  }
+}
+
+export function saveDismissedNotificationIds(
+  key: string,
+  ids: Set<string>,
+): void {
   if (typeof window === "undefined") {
     return;
   }

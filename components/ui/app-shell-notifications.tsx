@@ -9,8 +9,11 @@ import {
 } from "@/components/providers/app-data-provider";
 import {
   buildAccountNotifications,
+  dismissedNotificationsStorageKey,
+  loadDismissedNotificationIds,
   loadReadNotificationIds,
   readNotificationsStorageKey,
+  saveDismissedNotificationIds,
   saveReadNotificationIds,
   type AccountNotification,
   type NotificationKind,
@@ -24,6 +27,9 @@ export function AppShellNotifications() {
   const tasksLoad = useTasksLoad();
   const boardCatalog = useAppSelector((state) => state.tasks.boardCatalog);
   const storageKey = readNotificationsStorageKey(user?.id ?? null);
+  const dismissedStorageKey = dismissedNotificationsStorageKey(
+    user?.id ?? null,
+  );
 
   const notifications = useMemo(
     () =>
@@ -47,8 +53,9 @@ export function AppShellNotifications() {
 
   return (
     <AppShellNotificationsPanel
-      key={storageKey}
+      key={`${storageKey}:${dismissedStorageKey}`}
       storageKey={storageKey}
+      dismissedStorageKey={dismissedStorageKey}
       notifications={notifications}
       isAuthLoading={isAuthLoading}
     />
@@ -57,12 +64,14 @@ export function AppShellNotifications() {
 
 type AppShellNotificationsPanelProps = {
   storageKey: string;
+  dismissedStorageKey: string;
   notifications: AccountNotification[];
   isAuthLoading: boolean;
 };
 
 function AppShellNotificationsPanel({
   storageKey,
+  dismissedStorageKey,
   notifications,
   isAuthLoading,
 }: AppShellNotificationsPanelProps) {
@@ -71,8 +80,15 @@ function AppShellNotificationsPanel({
   const [readIds, setReadIds] = useState(() =>
     loadReadNotificationIds(storageKey),
   );
+  const [dismissedIds, setDismissedIds] = useState(() =>
+    loadDismissedNotificationIds(dismissedStorageKey),
+  );
 
-  const unreadCount = notifications.filter(
+  const visibleNotifications = notifications.filter(
+    (notification) => !dismissedIds.has(notification.id),
+  );
+
+  const unreadCount = visibleNotifications.filter(
     (notification) => !readIds.has(notification.id),
   ).length;
 
@@ -117,9 +133,32 @@ function AppShellNotificationsPanel({
   };
 
   const markAllAsRead = () => {
-    const next = new Set(notifications.map((notification) => notification.id));
+    const next = new Set(
+      visibleNotifications.map((notification) => notification.id),
+    );
     setReadIds(next);
     saveReadNotificationIds(storageKey, next);
+  };
+
+  const dismissNotification = (notificationId: string) => {
+    setDismissedIds((current) => {
+      if (current.has(notificationId)) {
+        return current;
+      }
+      const next = new Set(current);
+      next.add(notificationId);
+      saveDismissedNotificationIds(dismissedStorageKey, next);
+      return next;
+    });
+  };
+
+  const dismissAllNotifications = () => {
+    const next = new Set([
+      ...dismissedIds,
+      ...notifications.map((notification) => notification.id),
+    ]);
+    setDismissedIds(next);
+    saveDismissedNotificationIds(dismissedStorageKey, next);
   };
 
   return (
@@ -152,29 +191,41 @@ function AppShellNotificationsPanel({
             <h2 className="text-foreground text-sm font-semibold">
               Уведомления
             </h2>
-            {notifications.length > 0 && unreadCount > 0 ? (
-              <button
-                type="button"
-                onClick={markAllAsRead}
-                className="text-accent-strong hover:text-foreground text-xs font-medium transition-colors"
-              >
-                Прочитать все
-              </button>
+            {visibleNotifications.length > 0 ? (
+              <div className="flex items-center gap-3">
+                {unreadCount > 0 ? (
+                  <button
+                    type="button"
+                    onClick={markAllAsRead}
+                    className="text-accent-strong hover:text-foreground text-xs font-medium transition-colors"
+                  >
+                    Прочитать все
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={dismissAllNotifications}
+                  className="text-muted hover:text-foreground text-xs font-medium transition-colors"
+                >
+                  Очистить все
+                </button>
+              </div>
             ) : null}
           </div>
 
-          {notifications.length === 0 ? (
+          {visibleNotifications.length === 0 ? (
             <p className="text-muted px-4 py-6 text-center text-sm">
               {isAuthLoading ? "Загрузка…" : "Новых уведомлений нет"}
             </p>
           ) : (
             <ul className="max-h-80 overflow-y-auto py-1">
-              {notifications.map((notification) => (
+              {visibleNotifications.map((notification) => (
                 <NotificationItem
                   key={notification.id}
                   notification={notification}
                   isUnread={!readIds.has(notification.id)}
                   onActivate={() => markAsRead(notification.id)}
+                  onDismiss={() => dismissNotification(notification.id)}
                 />
               ))}
             </ul>
@@ -189,20 +240,30 @@ type NotificationItemProps = {
   notification: AccountNotification;
   isUnread: boolean;
   onActivate: () => void;
+  onDismiss: () => void;
 };
 
 function NotificationItem({
   notification,
   isUnread,
   onActivate,
+  onDismiss,
 }: NotificationItemProps) {
   return (
     <li>
       <div
-        className={`hover:bg-accent-soft/40 flex gap-3 px-4 py-3 transition-colors ${
+        className={`hover:bg-accent-soft/40 relative flex gap-3 px-4 py-3 pr-10 transition-colors ${
           isUnread ? "bg-accent-soft/25" : ""
         }`}
       >
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="text-muted hover:text-foreground absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-lg transition-colors"
+          aria-label="Скрыть уведомление"
+        >
+          <CloseIcon />
+        </button>
         <span
           className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${kindStyles[notification.kind]}`}
           aria-hidden
@@ -257,6 +318,19 @@ function NotificationKindIcon({ kind }: { kind: NotificationKind }) {
     default:
       return <InfoIcon />;
   }
+}
+
+function CloseIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M18 6 6 18M6 6l12 12"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
 
 function BellIcon() {
