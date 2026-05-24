@@ -1,16 +1,13 @@
 import { db } from "@/shared/server/db";
 import { apiError, created, ok } from "@/shared/server/http";
-import { getAuthenticatedUserId } from "@/shared/server/session";
+import { requireAuthenticatedUserId } from "@/shared/server/session";
 import {
   createProjectSchema,
   formatZodErrorMessage,
 } from "@/shared/server/validation";
 
 export async function GET(request: Request): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   const projects = await db.project.findMany({
     where: {
@@ -29,10 +26,7 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   try {
     const body = await request.json();

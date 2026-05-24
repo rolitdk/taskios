@@ -1,6 +1,6 @@
 import { db } from "@/shared/server/db";
 import { apiError, noContent, ok } from "@/shared/server/http";
-import { getAuthenticatedUserId } from "@/shared/server/session";
+import { requireAuthenticatedUserId } from "@/shared/server/session";
 import {
   getNextSortOrder,
   moveTaskToPosition,
@@ -32,10 +32,7 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   const { id } = await context.params;
   const task = await findTaskForUser(id, userId);
@@ -50,10 +47,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   const { id } = await context.params;
   const task = await findTaskForUser(id, userId);
@@ -79,7 +73,8 @@ export async function PATCH(
     const shouldReorder = statusChanged || orderChanged;
 
     if (shouldReorder) {
-      const targetOrder = sortOrder ?? (await getNextSortOrder(task.projectId, targetStatus));
+      const targetOrder =
+        sortOrder ?? (await getNextSortOrder(task.projectId, targetStatus));
       await moveTaskToPosition(task, targetStatus, targetOrder);
     }
 
@@ -112,10 +107,7 @@ export async function DELETE(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   const { id } = await context.params;
   const task = await findTaskForUser(id, userId);

@@ -5,7 +5,11 @@ import type {
   CreateBoardResponse,
   UpdateBoardResponse,
 } from "@/modules/board/model/board-api-types";
-import { getApiErrorMessage, readResponseJson } from "@/shared/lib/api-client";
+import {
+  fetchDataApi,
+  getApiErrorMessage,
+  readResponseJson,
+} from "@/shared/lib/api-client";
 import { dedupeAsync } from "@/shared/lib/dedupe-async";
 
 const BOARDS_API = "/api/boards";
@@ -27,10 +31,7 @@ async function parseBoardsResponse<T>(
     throw new BoardsApiError(getApiErrorMessage(body, fallbackMessage));
   }
 
-  if (
-    !body ||
-    (typeof body === "object" && body !== null && "error" in body)
-  ) {
+  if (!body || (typeof body === "object" && body !== null && "error" in body)) {
     throw new BoardsApiError(fallbackMessage);
   }
 
@@ -39,7 +40,7 @@ async function parseBoardsResponse<T>(
 
 export async function fetchBoards(): Promise<BoardDto[]> {
   return dedupeAsync("boards:list", async () => {
-    const response = await fetch(BOARDS_API, { method: "GET" });
+    const response = await fetchDataApi(BOARDS_API, { method: "GET" });
     const body = await parseBoardsResponse<BoardsListResponse>(
       response,
       "Не удалось загрузить доски",
@@ -50,7 +51,7 @@ export async function fetchBoards(): Promise<BoardDto[]> {
 }
 
 export async function createBoard(title: string): Promise<BoardDto> {
-  const response = await fetch(BOARDS_API, {
+  const response = await fetchDataApi(BOARDS_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title }),
@@ -67,7 +68,7 @@ export async function updateBoard(
   boardId: string,
   title: string,
 ): Promise<BoardDto> {
-  const response = await fetch(`${BOARDS_API}/${boardId}`, {
+  const response = await fetchDataApi(`${BOARDS_API}/${boardId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title }),
@@ -81,7 +82,7 @@ export async function updateBoard(
 }
 
 export async function deleteBoard(boardId: string): Promise<void> {
-  const response = await fetch(`${BOARDS_API}/${boardId}`, {
+  const response = await fetchDataApi(`${BOARDS_API}/${boardId}`, {
     method: "DELETE",
   });
 

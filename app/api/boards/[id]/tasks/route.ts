@@ -3,16 +3,13 @@ import {
   clearBoardColumnTasks,
   parseColumnStatus,
 } from "@/shared/server/clear-board-column";
-import { getAuthenticatedUserId } from "@/shared/server/session";
+import { requireAuthenticatedUserId } from "@/shared/server/session";
 
 export async function DELETE(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   const { id: boardId } = await context.params;
   const statusParam = new URL(request.url).searchParams.get("status");

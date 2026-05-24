@@ -1,6 +1,6 @@
 import { db } from "@/shared/server/db";
 import { apiError, noContent, ok } from "@/shared/server/http";
-import { getAuthenticatedUserId } from "@/shared/server/session";
+import { requireAuthenticatedUserId } from "@/shared/server/session";
 import {
   formatZodErrorMessage,
   updateBoardSchema,
@@ -29,10 +29,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   const { id } = await context.params;
   if (!(await ensureBoardAccess(id, userId))) {
@@ -75,10 +72,7 @@ export async function DELETE(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   const { id } = await context.params;
   if (!(await ensureBoardAccess(id, userId))) {

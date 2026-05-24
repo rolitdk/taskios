@@ -5,6 +5,7 @@ import {
   isAuthPagePath,
   isPublicPagePath,
 } from "@/modules/user/lib/auth-routes";
+import { AUTH_USER_ID_HEADER } from "@/shared/server/auth-context";
 import { setAuthCookies } from "@/shared/server/auth";
 import { resolveAuthFromRequest } from "@/shared/server/resolve-auth";
 
@@ -25,23 +26,50 @@ function withRefreshedCookies(
   return response;
 }
 
+function withUserIdHeader(headers: Headers, userId: string): Headers {
+  const next = new Headers(headers);
+  next.set(AUTH_USER_ID_HEADER, userId);
+  return next;
+}
+
+function continueToHandler(
+  request: NextRequest,
+  userId: string | undefined,
+  refreshedTokens: { accessToken: string; refreshToken: string } | undefined,
+): NextResponse {
+  const response = userId
+    ? NextResponse.next({
+        request: {
+          headers: withUserIdHeader(request.headers, userId),
+        },
+      })
+    : NextResponse.next();
+
+  return withRefreshedCookies(response, refreshedTokens);
+}
+
 function handleApiRoute(
   request: NextRequest,
   authenticated: boolean,
+  userId: string | undefined,
   refreshedTokens: { accessToken: string; refreshToken: string } | undefined,
 ): NextResponse {
   if (publicApiRoutes.has(request.nextUrl.pathname)) {
-    return withRefreshedCookies(NextResponse.next(), refreshedTokens);
+    return continueToHandler(
+      request,
+      authenticated ? userId : undefined,
+      refreshedTokens,
+    );
   }
 
-  if (!authenticated) {
+  if (!authenticated || !userId) {
     return NextResponse.json(
       { error: { code: "UNAUTHORIZED", message: "Требуется авторизация" } },
       { status: 401 },
     );
   }
 
-  return withRefreshedCookies(NextResponse.next(), refreshedTokens);
+  return continueToHandler(request, userId, refreshedTokens);
 }
 
 function handlePageRoute(
@@ -68,12 +96,11 @@ function handlePageRoute(
 }
 
 export async function proxy(request: NextRequest): Promise<NextResponse> {
-  const { authenticated, refreshedTokens } = await resolveAuthFromRequest(
-    request,
-  );
+  const { authenticated, userId, refreshedTokens } =
+    await resolveAuthFromRequest(request);
 
   if (request.nextUrl.pathname.startsWith("/api")) {
-    return handleApiRoute(request, authenticated, refreshedTokens);
+    return handleApiRoute(request, authenticated, userId, refreshedTokens);
   }
 
   return handlePageRoute(request, authenticated, refreshedTokens);

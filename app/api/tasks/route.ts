@@ -4,7 +4,7 @@ import {
 } from "@/shared/server/clear-board-column";
 import { db } from "@/shared/server/db";
 import { apiError, created, noContent, ok } from "@/shared/server/http";
-import { getAuthenticatedUserId } from "@/shared/server/session";
+import { requireAuthenticatedUserId } from "@/shared/server/session";
 import { getNextSortOrder } from "@/shared/server/task-reorder";
 import { toPublicTask } from "@/shared/server/task-serializer";
 import { normalizeTaskTags, taskTagsToJson } from "@/shared/server/task-tags";
@@ -15,10 +15,7 @@ import {
 
 export async function GET(request: Request): Promise<Response> {
   try {
-    const userId = await getAuthenticatedUserId(request);
-    if (!userId) {
-      return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-    }
+    const userId = requireAuthenticatedUserId(request);
 
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
@@ -46,10 +43,7 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   try {
     const body = await request.json();
@@ -99,10 +93,7 @@ export async function POST(request: Request): Promise<Response> {
 }
 
 export async function DELETE(request: Request): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   const url = new URL(request.url);
   const projectId = url.searchParams.get("projectId")?.trim();

@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import type { PublicUser } from "@/modules/user/model/auth-types";
+import { fetchDataApi } from "@/shared/lib/api-client";
 import { dedupeAsync } from "@/shared/lib/dedupe-async";
 
 type AuthContextValue = {
@@ -32,16 +33,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const refreshUser = useCallback(async () => {
     await dedupeAsync("auth:bootstrap", async () => {
       try {
-        let response = await fetch("/api/auth/me");
-
-        if (response.status === 401) {
-          const refreshResponse = await fetch("/api/auth/refresh", {
-            method: "POST",
-          });
-          if (refreshResponse.ok) {
-            response = await fetch("/api/auth/me");
-          }
-        }
+        const response = await fetchDataApi("/api/auth/me");
 
         if (response.ok) {
           const data = (await response.json()) as { user: PublicUser };

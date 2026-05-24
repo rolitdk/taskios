@@ -1,6 +1,6 @@
 import { db } from "@/shared/server/db";
 import { apiError, created, ok } from "@/shared/server/http";
-import { getAuthenticatedUserId } from "@/shared/server/session";
+import { requireAuthenticatedUserId } from "@/shared/server/session";
 import {
   createCommentSchema,
   formatZodErrorMessage,
@@ -31,10 +31,7 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   const { id: taskId } = await context.params;
   if (!(await ensureTaskAccess(taskId, userId))) {
@@ -53,10 +50,7 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   const { id: taskId } = await context.params;
   if (!(await ensureTaskAccess(taskId, userId))) {

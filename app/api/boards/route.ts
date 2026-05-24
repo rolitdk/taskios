@@ -1,7 +1,7 @@
 import { db } from "@/shared/server/db";
 import { apiError, created, ok } from "@/shared/server/http";
 import { toPublicProject } from "@/shared/server/serializers";
-import { getAuthenticatedUserId } from "@/shared/server/session";
+import { requireAuthenticatedUserId } from "@/shared/server/session";
 import {
   createBoardSchema,
   formatZodErrorMessage,
@@ -20,10 +20,7 @@ function boardDeadline(): Date {
 }
 
 export async function GET(request: Request): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   const projects = await db.project.findMany({
     where: {
@@ -51,10 +48,7 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const userId = await getAuthenticatedUserId(request);
-  if (!userId) {
-    return apiError(401, "UNAUTHORIZED", "Требуется авторизация");
-  }
+  const userId = requireAuthenticatedUserId(request);
 
   try {
     const body = await request.json();

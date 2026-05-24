@@ -8,7 +8,11 @@ import type {
   UpdateTaskRequest,
   UpdateTaskResponse,
 } from "@/modules/tasks/model/task-api-types";
-import { getApiErrorMessage, readResponseJson } from "@/shared/lib/api-client";
+import {
+  fetchDataApi,
+  getApiErrorMessage,
+  readResponseJson,
+} from "@/shared/lib/api-client";
 import { dedupeAsync } from "@/shared/lib/dedupe-async";
 
 const TASKS_API = "/api/tasks";
@@ -30,20 +34,15 @@ async function parseTasksResponse<T>(
     throw new TasksApiError(getApiErrorMessage(body, fallbackMessage));
   }
 
-  if (
-    !body ||
-    (typeof body === "object" && body !== null && "error" in body)
-  ) {
+  if (!body || (typeof body === "object" && body !== null && "error" in body)) {
     throw new TasksApiError(fallbackMessage);
   }
 
   return body as T;
 }
 
-export async function createTask(
-  payload: CreateTaskRequest,
-): Promise<TaskDto> {
-  const response = await fetch(TASKS_API, {
+export async function createTask(payload: CreateTaskRequest): Promise<TaskDto> {
+  const response = await fetchDataApi(TASKS_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -60,7 +59,7 @@ export async function updateTask(
   taskId: string,
   payload: UpdateTaskRequest,
 ): Promise<TaskDto> {
-  const response = await fetch(`${TASKS_API}/${taskId}`, {
+  const response = await fetchDataApi(`${TASKS_API}/${taskId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -77,10 +76,10 @@ export async function fetchTasks(boardId?: string): Promise<TaskDto[]> {
   const cacheKey = boardId ? `tasks:list:${boardId}` : "tasks:list:all";
 
   return dedupeAsync(cacheKey, async () => {
-    const query = boardId
-      ? `?projectId=${encodeURIComponent(boardId)}`
-      : "";
-    const response = await fetch(`${TASKS_API}${query}`, { method: "GET" });
+    const query = boardId ? `?projectId=${encodeURIComponent(boardId)}` : "";
+    const response = await fetchDataApi(`${TASKS_API}${query}`, {
+      method: "GET",
+    });
     const body = await parseTasksResponse<TasksListResponse>(
       response,
       "Не удалось загрузить задачи",
@@ -91,7 +90,7 @@ export async function fetchTasks(boardId?: string): Promise<TaskDto[]> {
 }
 
 export async function deleteTask(taskId: string): Promise<void> {
-  const response = await fetch(`${TASKS_API}/${taskId}`, {
+  const response = await fetchDataApi(`${TASKS_API}/${taskId}`, {
     method: "DELETE",
   });
 
@@ -113,7 +112,9 @@ export async function clearColumnTasks(
     projectId: boardId,
     status,
   });
-  const response = await fetch(`${TASKS_API}?${query}`, { method: "DELETE" });
+  const response = await fetchDataApi(`${TASKS_API}?${query}`, {
+    method: "DELETE",
+  });
 
   if (response.status === 204) {
     return;
