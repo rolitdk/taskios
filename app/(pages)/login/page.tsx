@@ -1,18 +1,15 @@
 import { Suspense } from "react";
 
-import { AppShell } from "@/components/ui/app-shell";
 import { LoginForm } from "@/modules/user/ui/login-form";
 
 export default function LoginPage() {
   return (
-    <AppShell>
-      <main className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6">
-        <div className="bg-surface w-full max-w-md rounded-3xl p-8 shadow-lg ring-1 ring-purple-200/50">
-          <Suspense fallback={null}>
-            <LoginForm />
-          </Suspense>
-        </div>
-      </main>
-    </AppShell>
+    <main className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6">
+      <div className="bg-surface w-full max-w-md rounded-3xl p-8 shadow-lg ring-1 ring-purple-200/50">
+        <Suspense fallback={null}>
+          <LoginForm />
+        </Suspense>
+      </div>
+    </main>
   );
 }

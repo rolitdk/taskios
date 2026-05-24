@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { AppShell } from "@/components/ui/app-shell";
 import { HomeLanding } from "@/components/ui/home-landing";
 
 export const metadata: Metadata = {
@@ -10,9 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return (
-    <AppShell>
-      <HomeLanding />
-    </AppShell>
-  );
+  return <HomeLanding />;
 }
