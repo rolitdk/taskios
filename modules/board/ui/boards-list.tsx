@@ -15,7 +15,6 @@ import { TaskModal } from "@/modules/tasks/ui/task-modal";
 import type { BoardCatalogItem } from "@/modules/board/model/board-catalog";
 import { useDeleteBoard } from "@/modules/board/hooks/use-delete-board";
 import { useLoadBoards } from "@/modules/board/hooks/use-load-boards";
-import { useTasksLoad } from "@/components/providers/app-data-provider";
 import { useAppSelector } from "@/store/hooks";
 import { selectBoardCatalogItems } from "@/modules/board/store/board-selectors";
 
@@ -39,7 +38,6 @@ export function BoardsList() {
   const { isLoading: isBoardsLoading, error: boardsLoadError } = useLoadBoards({
     enabled: true,
   });
-  const { error: tasksLoadError } = useTasksLoad();
   const {
     deleteBoard,
     isDeleting,
@@ -110,9 +108,9 @@ export function BoardsList() {
         <h1 className="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
           Мои доски
         </h1>
-        {boardsLoadError || tasksLoadError ? (
+        {boardsLoadError ? (
           <p className="mt-2 text-sm text-red-600" role="alert">
-            {boardsLoadError ?? tasksLoadError}
+            {boardsLoadError}
           </p>
         ) : null}
       </header>

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { useTasksLoad } from "@/components/providers/app-data-provider";
 import {
   buildAccountNotifications,
   dismissedNotificationsStorageKey,
@@ -20,7 +19,6 @@ import { useAppSelector } from "@/store/hooks";
 
 export function AppShellNotifications() {
   const { user, isLoading: isAuthLoading } = useAuth();
-  const tasksLoad = useTasksLoad();
   const boardCatalog = useAppSelector((state) => state.tasks.boardCatalog);
   const boardCatalogIdsKey = useAppSelector(
     (state) => state.tasks.boardCatalogIdsKey,
@@ -39,9 +37,9 @@ export function AppShellNotifications() {
         boardCount: boardCatalog.length,
         boardsReady,
         boardsError: null,
-        tasksError: tasksLoad.error,
+        tasksError: null,
       }),
-    [boardCatalog.length, boardsReady, isAuthLoading, tasksLoad.error, user],
+    [boardCatalog.length, boardsReady, isAuthLoading, user],
   );
 
   return (

@@ -6,7 +6,7 @@ import { useEffect } from "react";
 
 import { BoardView } from "@/modules/board/ui/board-view";
 import { useActiveBoard } from "@/modules/board/hooks/use-active-board";
-import { useTasksLoad } from "@/components/providers/app-data-provider";
+import { useLoadTasks } from "@/modules/tasks/hooks/use-load-tasks";
 import { useAuth } from "@/modules/user/providers/auth-provider";
 import { BOARD_HIGHLIGHT_TASK_QUERY } from "@/modules/board/model/board-catalog";
 import { useAppSelector } from "@/store/hooks";
@@ -25,7 +25,6 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
   const highlightedTaskId = searchParams.get(BOARD_HIGHLIGHT_TASK_QUERY);
   const { user, isLoading: isAuthLoading } = useAuth();
   useActiveBoard(boardId);
-  const { isLoading: isTasksLoading, error: tasksLoadError } = useTasksLoad();
   const boardCatalogIdsKey = useAppSelector(
     (state) => state.tasks.boardCatalogIdsKey,
   );
@@ -34,6 +33,10 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
     selectBoardCatalogItemById(state, boardId),
   );
   const catalogSynced = !user || boardCatalogIdsKey !== null;
+  const { isLoading: isTasksLoading, error: tasksLoadError } = useLoadTasks({
+    enabled: catalogSynced,
+    boardId,
+  });
 
   useEffect(() => {
     if (!highlightedTaskId) {

@@ -170,6 +170,14 @@ const tasksSlice = createSlice({
         .map((board) => board.id)
         .join(",");
     },
+    setBoardTasksFromApi(
+      state,
+      action: PayloadAction<{ boardId: string; tasks: BoardTask[] }>,
+    ) {
+      const { boardId, tasks } = action.payload;
+      state.boards[boardId] = tasks;
+      state.loadedBoardIdsKey = boardId;
+    },
     setBoardCatalogIdsKey(state, action: PayloadAction<string | null>) {
       state.boardCatalogIdsKey = action.payload;
     },
@@ -365,6 +373,7 @@ export const {
   setActiveBoard,
   setBoardCatalog,
   setAllBoardTasks,
+  setBoardTasksFromApi,
   setBoardCatalogIdsKey,
   setLoadedBoardIdsKey,
   addBoard,
