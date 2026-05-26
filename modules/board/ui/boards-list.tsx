@@ -14,10 +14,8 @@ import {
 import { TaskModal } from "@/modules/tasks/ui/task-modal";
 import type { BoardCatalogItem } from "@/modules/board/model/board-catalog";
 import { useDeleteBoard } from "@/modules/board/hooks/use-delete-board";
-import {
-  useBoardsLoad,
-  useTasksLoad,
-} from "@/components/providers/app-data-provider";
+import { useLoadBoards } from "@/modules/board/hooks/use-load-boards";
+import { useTasksLoad } from "@/components/providers/app-data-provider";
 import { useAppSelector } from "@/store/hooks";
 import { selectBoardCatalogItems } from "@/modules/board/store/board-selectors";
 
@@ -38,13 +36,16 @@ export function BoardsList() {
   const searchParams = useSearchParams();
   const { user, isLoading } = useAuth();
   const boards = useAppSelector(selectBoardCatalogItems);
-  const {
-    isLoading: isBoardsLoading,
-    error: boardsLoadError,
-  } = useBoardsLoad();
+  const { isLoading: isBoardsLoading, error: boardsLoadError } = useLoadBoards({
+    enabled: true,
+  });
   const { error: tasksLoadError } = useTasksLoad();
-  const { deleteBoard, isDeleting, error: deleteError, clearError } =
-    useDeleteBoard();
+  const {
+    deleteBoard,
+    isDeleting,
+    error: deleteError,
+    clearError,
+  } = useDeleteBoard();
   const createOpen = searchParams.get(BOARDS_CREATE_QUERY) === "1";
   const [editBoard, setEditBoard] = useState<EditBoardState | null>(null);
   const [deleteBoardState, setDeleteBoardState] =
@@ -143,7 +144,7 @@ export function BoardsList() {
               </div>
               <Link
                 href={board.href}
-                className="text-muted border-accent-soft/80 mt-auto flex min-h-16 items-center justify-center rounded-xl border border-dashed bg-white/40 px-3 py-2 text-sm font-medium transition-colors hover:bg-white/70 focus-visible:ring-2 focus-visible:ring-accent-strong/60 focus-visible:outline-none"
+                className="text-muted border-accent-soft/80 focus-visible:ring-accent-strong/60 mt-auto flex min-h-16 items-center justify-center rounded-xl border border-dashed bg-white/40 px-3 py-2 text-sm font-medium transition-colors hover:bg-white/70 focus-visible:ring-2 focus-visible:outline-none"
               >
                 Открыть доску
               </Link>
@@ -155,7 +156,7 @@ export function BoardsList() {
             type="button"
             onClick={openCreate}
             disabled={isLoading}
-            className="bg-column-bg hover:ring-accent-strong/60 border-accent-soft/80 text-muted hover:text-foreground flex w-80 flex-col rounded-2xl border-2 border-dashed p-3 ring-1 ring-purple-200/40 transition-shadow hover:bg-white/40 hover:shadow-md focus-visible:ring-2 focus-visible:ring-accent-strong/60 focus-visible:outline-none disabled:opacity-60"
+            className="bg-column-bg hover:ring-accent-strong/60 border-accent-soft/80 text-muted hover:text-foreground focus-visible:ring-accent-strong/60 flex w-80 flex-col rounded-2xl border-2 border-dashed p-3 ring-1 ring-purple-200/40 transition-shadow hover:bg-white/40 hover:shadow-md focus-visible:ring-2 focus-visible:outline-none disabled:opacity-60"
             aria-label="Создать новую доску"
           >
             <span className="mb-3 block min-h-5" aria-hidden />

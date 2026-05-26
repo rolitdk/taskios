@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import {
-  useBoardsLoad,
-  useTasksLoad,
-} from "@/components/providers/app-data-provider";
+import { useTasksLoad } from "@/components/providers/app-data-provider";
 import {
   buildAccountNotifications,
   dismissedNotificationsStorageKey,
@@ -23,9 +20,12 @@ import { useAppSelector } from "@/store/hooks";
 
 export function AppShellNotifications() {
   const { user, isLoading: isAuthLoading } = useAuth();
-  const boardsLoad = useBoardsLoad();
   const tasksLoad = useTasksLoad();
   const boardCatalog = useAppSelector((state) => state.tasks.boardCatalog);
+  const boardCatalogIdsKey = useAppSelector(
+    (state) => state.tasks.boardCatalogIdsKey,
+  );
+  const boardsReady = !user || boardCatalogIdsKey !== null;
   const storageKey = readNotificationsStorageKey(user?.id ?? null);
   const dismissedStorageKey = dismissedNotificationsStorageKey(
     user?.id ?? null,
@@ -37,18 +37,11 @@ export function AppShellNotifications() {
         user,
         isAuthLoading,
         boardCount: boardCatalog.length,
-        boardsReady: boardsLoad.isReady,
-        boardsError: boardsLoad.error,
+        boardsReady,
+        boardsError: null,
         tasksError: tasksLoad.error,
       }),
-    [
-      boardCatalog.length,
-      boardsLoad.error,
-      boardsLoad.isReady,
-      isAuthLoading,
-      tasksLoad.error,
-      user,
-    ],
+    [boardCatalog.length, boardsReady, isAuthLoading, tasksLoad.error, user],
   );
 
   return (

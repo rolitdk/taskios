@@ -10,7 +10,13 @@ import {
 } from "@/modules/tasks/model/tasks-slice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
-export function useLoadBoards() {
+type UseLoadBoardsOptions = {
+  /** Выполнять GET /api/boards (только на странице списка досок) */
+  enabled?: boolean;
+};
+
+export function useLoadBoards(options: UseLoadBoardsOptions = {}) {
+  const { enabled = false } = options;
   const dispatch = useAppDispatch();
   const { user, isLoading: isAuthLoading } = useAuth();
   const boardCatalog = useAppSelector((state) => state.tasks.boardCatalog);
@@ -22,7 +28,7 @@ export function useLoadBoards() {
   const boardIdsKey = boardCatalog.map((board) => board.id).join(",");
 
   useEffect(() => {
-    if (isAuthLoading) {
+    if (!enabled || isAuthLoading) {
       return;
     }
 
@@ -67,6 +73,7 @@ export function useLoadBoards() {
     boardCatalogIdsKey,
     boardIdsKey,
     dispatch,
+    enabled,
     isAuthLoading,
     user,
   ]);
@@ -74,8 +81,11 @@ export function useLoadBoards() {
   const isGuestReady = !isAuthLoading && !user;
   const syncedCatalogKey = user ? boardCatalogIdsKey : null;
   const isLoading =
-    Boolean(user) && !isAuthLoading && syncedCatalogKey !== boardIdsKey;
-  const isReady = isGuestReady || (!isLoading && !isAuthLoading);
+    enabled &&
+    Boolean(user) &&
+    !isAuthLoading &&
+    syncedCatalogKey !== boardIdsKey;
+  const isReady = !enabled || isGuestReady || (!isLoading && !isAuthLoading);
 
   return { isLoading, isReady, error };
 }

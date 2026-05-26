@@ -6,10 +6,8 @@ import { useEffect } from "react";
 
 import { BoardView } from "@/modules/board/ui/board-view";
 import { useActiveBoard } from "@/modules/board/hooks/use-active-board";
-import {
-  useBoardsLoad,
-  useTasksLoad,
-} from "@/components/providers/app-data-provider";
+import { useTasksLoad } from "@/components/providers/app-data-provider";
+import { useAuth } from "@/modules/user/providers/auth-provider";
 import { BOARD_HIGHLIGHT_TASK_QUERY } from "@/modules/board/model/board-catalog";
 import { useAppSelector } from "@/store/hooks";
 import { selectBoardCatalogItemById } from "@/modules/board/store/board-selectors";
@@ -25,13 +23,17 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const highlightedTaskId = searchParams.get(BOARD_HIGHLIGHT_TASK_QUERY);
+  const { user, isLoading: isAuthLoading } = useAuth();
   useActiveBoard(boardId);
-  const { isLoading: isBoardsLoading, isReady: isBoardsReady } = useBoardsLoad();
   const { isLoading: isTasksLoading, error: tasksLoadError } = useTasksLoad();
+  const boardCatalogIdsKey = useAppSelector(
+    (state) => state.tasks.boardCatalogIdsKey,
+  );
 
   const board = useAppSelector((state) =>
     selectBoardCatalogItemById(state, boardId),
   );
+  const catalogSynced = !user || boardCatalogIdsKey !== null;
 
   useEffect(() => {
     if (!highlightedTaskId) {
@@ -48,22 +50,27 @@ export function BoardPageClient({ boardId }: BoardPageClientProps) {
   }, [highlightedTaskId, pathname, router]);
 
   useEffect(() => {
-    if (!isBoardsReady) {
+    if (isAuthLoading || !catalogSynced) {
       return;
     }
 
     if (!board) {
       router.replace("/boards");
     }
-  }, [board, isBoardsReady, router]);
+  }, [board, catalogSynced, isAuthLoading, router]);
 
-  const isPageLoading = isBoardsLoading || isTasksLoading || !board;
+  const isPageLoading =
+    isAuthLoading || !catalogSynced || isTasksLoading || !board;
 
   if (isPageLoading) {
     return (
       <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-4 py-6 sm:px-6">
         <p className="text-muted text-sm">
-          {isBoardsLoading ? "Загрузка доски…" : "Загрузка задач…"}
+          {!catalogSynced
+            ? "Загрузка доски…"
+            : isTasksLoading
+              ? "Загрузка задач…"
+              : "Загрузка…"}
         </p>
       </main>
     );
