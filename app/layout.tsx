@@ -1,20 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 
 import { AuthProvider } from "@/modules/user/providers/auth-provider";
 import { StoreProvider } from "@/store/store-provider";
 
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Taskios",
@@ -28,10 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="ru"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="ru" className="h-full antialiased">
       <body className="bg-background text-foreground flex min-h-screen flex-col font-sans">
         <StoreProvider>
           <AuthProvider>{children}</AuthProvider>

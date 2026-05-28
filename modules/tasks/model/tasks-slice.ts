@@ -51,7 +51,7 @@ export type BoardCatalogEntry = {
   title: string;
 };
 
-type TasksState = {
+export type TasksState = {
   activeBoardId: string;
   boardCatalog: BoardCatalogEntry[];
   boards: Record<string, BoardTask[]>;
