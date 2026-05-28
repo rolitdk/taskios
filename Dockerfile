@@ -30,6 +30,8 @@ RUN apt-get update -y \
   && apt-get install -y --no-install-recommends openssl ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 ENV NEXT_TELEMETRY_DISABLED=1
+# prisma.config.ts reads DATABASE_URL at config load time
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/taskios?schema=public"
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
