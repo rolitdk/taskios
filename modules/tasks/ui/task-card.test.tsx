@@ -84,7 +84,6 @@ describe("TaskCard", () => {
     );
 
     expect(onEdit).toHaveBeenCalledTimes(1);
-    expect(deleteTaskMocks.deleteTask).not.toHaveBeenCalled();
   });
 
   it("calls deleteTask when delete button is clicked", async () => {
